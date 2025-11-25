@@ -44,13 +44,20 @@ model_params = {
 
 model = CityModel(model_params["N"])
 
-space_component = make_space_component(
-    agent_portrayal, draw_grid=False, post_process=post_process
-)
+# space_component = make_space_component(
+#     agent_portrayal, draw_grid=False, post_process=post_process
+# )
 
-page = SolaraViz(
-    model,
-    components=[space_component],
-    model_params=model_params,
-    name="Random Model",
-)
+# page = SolaraViz(
+#     model,
+#     components=[space_component],
+#     model_params=model_params,
+#     name="Random Model",
+# )
+
+grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
+
+server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
+                       
+server.port = 8522 # The default
+server.launch()

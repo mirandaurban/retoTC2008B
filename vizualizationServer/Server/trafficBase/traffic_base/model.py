@@ -3,7 +3,6 @@ from mesa.discrete_space import OrthogonalMooreGrid
 from .agent import *
 import json
 
-
 class CityModel(Model):
     """
     Creates a model based on a city map.
@@ -18,7 +17,7 @@ class CityModel(Model):
         super().__init__(seed=seed)
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
-        dataDictionary = json.load(open("city_files/mapDictionary.json"))
+        dataDictionary = json.load(open("../city_files/mapDictionary.json"))
 
         self.num_agents = N
         self.traffic_lights = []
@@ -30,7 +29,7 @@ class CityModel(Model):
             self.height = len(lines)
 
             self.grid = OrthogonalMooreGrid(
-                [self.width, self.height], capacity=100, torus=False
+                [self.width, self.height], capacity=100, torus=False, random=self.random
             )
 
             # Goes through each character in the map file and creates the corresponding agent.
