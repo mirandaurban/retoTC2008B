@@ -14,8 +14,8 @@ class Car(CellAgent):
         super().__init__(model)
         self.cell = cell
         self.known_destinations = [cell] # To keep a list of the known destinations of each car
-        self.initial_direction = "Right" # Posición inicial default (cambiar después)
-        self.current_direction = "Right"  
+        self.initial_direction = "Left" # Posición inicial default (cambiar después)
+        self.current_direction = "Left"  
 
     def evaluate_traffic_light(self, cells_with_traffic_light):
         return 0
@@ -91,10 +91,10 @@ class Car(CellAgent):
             return x1 == x2 and y1 == y2 - 1
         elif road_direction == "Right":
             # y reamins equal, while x1 must be less than x2
-            return y1 == y2 and x1 == x2 + 1
+            return y1 == y2 and x1 == x2 - 1
         elif road_direction == "Left":
             # y reamins equal, while x1 must be greater than x2
-            return y1 == y2 and x1 == x2 - 1
+            return y1 == y2 and x1 == x2 + 1
 
         return False # If there is no cell that have those attributes
 
@@ -142,6 +142,7 @@ class Car(CellAgent):
         # Move to the first cell, if possible
         if possible_cells:
             new_cell = possible_cells[0]
+            print(new_cell)
             self.update_direction(new_cell)
             old_position = self.cell.coordinate
             self.cell = new_cell
