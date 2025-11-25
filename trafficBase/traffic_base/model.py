@@ -58,7 +58,7 @@ class CityModel(Model):
                         agent = Destination(self, cell)
 
         # Crear un coche inicial en la celda 1,1
-        cell_inicial = self.grid[22, 1]    
+        cell_inicial = self.grid[1, 24]    
         agent = Car(
             self, cell=cell_inicial
         )
