@@ -53,24 +53,6 @@ class Car(CellAgent):
         x2 = cell_next.coordinate[0] 
         y2 = cell_next.coordinate[1] 
 
-        # Recopilar la dirección del agente calle
-        if current_direction == "v":
-            # x es igual, pero y_next tiene que ser menor que y_actual
-            if (x1 == x2 and y2 < y1):
-            # Move down
-        elif current_direction == "^":
-            # x es igual, pero y_next tiene que ser mayor que y_actual
-            if (x1 == x2 and y2 > y1):
-            # Move up
-        elif current_direction == ">":
-            # y es igual, pero x_next tiene que ser mayor que x_actual
-            if (y1 == y2 and x2 > x1):
-            # Move to the right
-        elif current_direction == "<":
-            # y es igual, pero x_next tiene que ser menor que x_actual
-            if (y1 == y2 and x2 < x1):
-            # Move to the left
-
 
     def move(self):
         possible_cells = []
