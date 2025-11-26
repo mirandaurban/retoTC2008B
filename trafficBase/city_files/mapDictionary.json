@@ -1,10 +1,28 @@
 {
-    ">" : "Right",
-    "<" : "Left",
-    "S" : 15,
-    "s" : 7,
-    "#" : "Obstacle",
-    "v" : "Down",
-    "^" : "Up",
-    "D" : "Destination"
+  ">": "Right",
+  "<": "Left",
+  "S": 15,
+  "s": 7,
+  "#": "Obstacle",
+  "v": "Down",
+  "^": "Up",
+  "D": "Destination",
+
+  "r": ["Right", 7],
+  "R": ["Right", 15],
+  "l": ["Left", 7],
+  "L": ["Left", 15],
+  "u": ["Up", 7],
+  "U": ["Up", 15],
+  "d": ["Down", 7],
+  "W": ["Down", 15],
+
+  "A": ["Up", "Right"],
+  "B": ["Up", "Left"],
+  "C": ["Down", "Right"],
+  "E": ["Down", "Left"],
+  "F": ["Right", "Up"],
+  "G": ["Right", "Down"],
+  "H": ["Left", "Up"],
+  "J": ["Left", "Down"]
 }

@@ -42,14 +42,30 @@ class CityModel(Model):
                     if col in ["v", "^", ">", "<"]:
                         agent = Road(self, cell, dataDictionary[col])
 
-                    elif col in ["S", "s"]:
+                    # Traffic lights with road (lowercase = green start, uppercase = red start)
+                    elif col in ["r", "R", "l", "L", "u", "U", "d", "W"]:
+                        direction = dataDictionary[col][0]   # "Right", "Left", etc.
+                        duration  = dataDictionary[col][1]   # 7 o 15
+
+                        # Semáforo empieza en verde si es minúscula
+                        starts_green = col.islower()
                         agent = Traffic_Light(
                             self,
                             cell,
-                            False if col == "S" else True,
-                            int(dataDictionary[col]),
+                            starts_green,
+                            duration,
+                            direction 
                         )
                         self.traffic_lights.append(agent)
+
+                    # elif col in ["S", "s"]:
+                    #     agent = Traffic_Light(
+                    #         self,
+                    #         cell,
+                    #         False if col == "S" else True,
+                    #         int(dataDictionary[col]),
+                    #     )
+                    #     self.traffic_lights.append(agent)
 
                     elif col == "#":
                         agent = Obstacle(self, cell)
@@ -68,3 +84,4 @@ class CityModel(Model):
     def step(self):
         """Advance the model by one step."""
         self.agents.shuffle_do("step")
+        #print(self.grid[0,13])

@@ -17,8 +17,25 @@ class Car(CellAgent):
         self.initial_direction = "Left" # Posición inicial default (cambiar después)
         self.current_direction = "Left"  
 
-    def evaluate_traffic_light(self, cells_with_traffic_light):
-        return 0
+    def evaluate_traffic_light(self, next_cell):
+        """
+        Evaluates whether there is a traffic light in the next cell or in adjacent cells.
+        When Traffic_Light state:
+        - True: Green traffic light, proceed
+        - False: Red traffic light, stop
+        """
+        # Check if there's a traffic light in the next cell
+        for agent in next_cell.agents:
+            #print(agent)
+            if isinstance(agent, Traffic_Light):
+                # If there's a traffic light, check its state
+                # state = True means green (can pass)
+                # state = False means red (cannot pass)
+                #print(agent.state)
+                return agent.state
+        
+        # If there's no traffic light, the car can proceed
+        return True
 
     def is_cells_a_destination(self):
         """
@@ -56,7 +73,7 @@ class Car(CellAgent):
         (radius: 1)
         """
         cells_with_road = self.cell.neighborhood.select(
-            lambda cell: any(isinstance(obj, Road) for obj in cell.agents)
+            lambda cell: any(isinstance(obj, (Road, Traffic_Light)) for obj in cell.agents)
         )
         return cells_with_road
 
@@ -66,6 +83,8 @@ class Car(CellAgent):
         """
         for agent in cell.agents:
             if isinstance(agent, Road):
+                return agent.direction
+            elif isinstance(agent, Traffic_Light):
                 return agent.direction
         return None
 
@@ -97,7 +116,7 @@ class Car(CellAgent):
             return y1 == y2 and x1 == x2 + 1
 
         return False # If there is no cell that have those attributes
-
+    
 
     def move(self):
         """
@@ -105,7 +124,7 @@ class Car(CellAgent):
         """
         # Check if the current cell has road
         current_road_direction = self.get_road_direction(self.cell)        
-        print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
+        #print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
         
         # Obtain all the neighbor cells (radio 1)
         neighbor_cells = self.cell.neighborhood
@@ -132,6 +151,12 @@ class Car(CellAgent):
             
             if has_cars:
                 continue
+
+            can_pass_traffic_light = self.evaluate_traffic_light(cell)
+            #Check traffic light state before adding to possible cells
+        
+            if not can_pass_traffic_light:
+                continue
             
             # Check if the movement is valid according to the direction of the road
             is_valid_move = self.validate_road_direction(self.cell, cell)
@@ -142,7 +167,7 @@ class Car(CellAgent):
         # Move to the first cell, if possible
         if possible_cells:
             new_cell = possible_cells[0]
-            print(new_cell)
+            #print(new_cell)
             self.update_direction(new_cell)
             old_position = self.cell.coordinate
             self.cell = new_cell
@@ -179,7 +204,7 @@ class Traffic_Light(FixedAgent):
     """
     Traffic light. Where the traffic lights are in the grid.
     """
-    def __init__(self, model, cell, state = False, timeToChange = 10):
+    def __init__(self, model, cell, state = False, timeToChange = 10, direction=None):
         """
         Creates a new Traffic light.
         Args:
@@ -187,11 +212,13 @@ class Traffic_Light(FixedAgent):
             cell: The initial position of the agent
             state: Whether the traffic light is green or red
             timeToChange: After how many step should the traffic light change color 
+            direction: Direction allowed for traffic ("Right", "Left", "Up", "Down")
         """
         super().__init__(model)
         self.cell = cell
         self.state = state
         self.timeToChange = timeToChange
+        self.direction = direction
 
     def step(self):
         """ 
