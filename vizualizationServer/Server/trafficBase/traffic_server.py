@@ -94,7 +94,7 @@ def getObstacles():
             # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of an obstacle.
 
             obstacleCells = randomModel.grid.all_cells.select(
-                lambda cell: any(isinstance(obj, ObstacleAgent) for obj in cell.agents)
+                lambda cell: any(isinstance(obj, Obstacle) for obj in cell.agents)
             )
             # print(f"CELLS: {agentCells}")
 
@@ -102,7 +102,7 @@ def getObstacles():
                 (cell.coordinate, agent)
                 for cell in obstacleCells
                 for agent in cell.agents
-                if isinstance(agent, ObstacleAgent)
+                if isinstance(agent, Obstacle)
             ]
             # print(f"AGENTS: {agents}")
 

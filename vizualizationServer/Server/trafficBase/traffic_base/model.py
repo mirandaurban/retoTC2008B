@@ -2,6 +2,8 @@ from mesa import Model
 from mesa.discrete_space import OrthogonalMooreGrid
 from .agent import *
 import json
+import random
+
 
 class CityModel(Model):
     """
@@ -15,15 +17,17 @@ class CityModel(Model):
     def __init__(self, N, seed=42):
 
         super().__init__(seed=seed)
+        self.random = random.Random(42)
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
-        dataDictionary = json.load(open("../city_files/mapDictionary.json"))
+        dataDictionary = json.load(open("./trafficBase/city_files/mapDictionary.json"))
+        print(dataDictionary)
 
         self.num_agents = N
         self.traffic_lights = []
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open("city_files/2022_base.txt") as baseFile:
+        with open("./trafficBase/city_files/2022_base.txt") as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])
             self.height = len(lines)
