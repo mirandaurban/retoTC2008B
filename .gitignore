@@ -1,0 +1,7 @@
+.DS_Store
+.agents
+venv/
+__pycache__/
+*.vscode
+node_modules/
+.env
