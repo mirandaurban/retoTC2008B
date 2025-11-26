@@ -2,7 +2,14 @@ from mesa.discrete_space import CellAgent, FixedAgent
 
 class Car(CellAgent):
     """
-    Agent that moves randomly.
+    State:
+        - "In destination"
+        - "Waiting traffic light"
+             - Communicating with cooldown 
+        - "Waiting other car"
+            - Communicating with cooldown 
+        - "Exploring"
+        - Communicate state of the city
     """
     def __init__(self, model, cell):
         """
@@ -13,9 +20,10 @@ class Car(CellAgent):
         """
         super().__init__(model)
         self.cell = cell
-        self.known_destinations = [cell] # To keep a list of the known destinations of each car
         self.initial_direction = "Left" # Posición inicial default (cambiar después)
-        self.current_direction = "Left"  
+        self.current_direction = "Left" 
+        self.state = "Exploring" 
+        
 
     def evaluate_traffic_light(self, next_cell):
         """
@@ -163,11 +171,11 @@ class Car(CellAgent):
             
             if is_valid_move:
                 possible_cells.append(cell)
-                
+        print(possible_cells)
         # Move to the first cell, if possible
         if possible_cells:
             new_cell = possible_cells[0]
-            #print(new_cell)
+            print(new_cell)
             self.update_direction(new_cell)
             old_position = self.cell.coordinate
             self.cell = new_cell
@@ -260,7 +268,7 @@ class Road(FixedAgent):
     """
     Road agent. Determines where the cars can move, and in which direction.
     """
-    def __init__(self, model, cell, direction= "Left"):
+    def __init__(self, model, cell, direction= "Left", direction2 = None):
         """
         Creates a new road.
         Args:
@@ -271,3 +279,4 @@ class Road(FixedAgent):
         super().__init__(model)
         self.cell = cell
         self.direction = direction
+        self.direction2 = direction2

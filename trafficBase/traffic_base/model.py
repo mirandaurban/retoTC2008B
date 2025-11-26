@@ -41,6 +41,11 @@ class CityModel(Model):
 
                     if col in ["v", "^", ">", "<"]:
                         agent = Road(self, cell, dataDictionary[col])
+                    
+                    elif col in ["A", "B", "C", "E", "F", "G", "H", "J"]:
+                        direction1 = dataDictionary[col][0]
+                        direction2  = dataDictionary[col][1]
+                        agent = Road(self, cell, direction1, direction2)
 
                     # Traffic lights with road (lowercase = green start, uppercase = red start)
                     elif col in ["r", "R", "l", "L", "u", "U", "d", "W"]:
@@ -74,7 +79,8 @@ class CityModel(Model):
                         agent = Destination(self, cell)
 
         # Crear un coche inicial en la celda 1,1
-        cell_inicial = self.grid[0,24]    
+       #cell_inicial = self.grid[6,15]
+        cell_inicial = self.grid[0,24]     
         agent = Car(
             self, cell=cell_inicial
         )
