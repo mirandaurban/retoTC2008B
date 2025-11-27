@@ -103,9 +103,8 @@ class Car(CellAgent):
     
     def validate_road_direction(self, current_cell, next_cell):
         """ Validate if the agent movement is correct according to the road direction """
-        #Debe validar si tiene next_cell tiene dos direcciones (es intersección)
-
-        # Obtain coordindates of the current and next cell
+        
+        # Obtain coordinates of the current and next cell
         x1, y1 = current_cell.coordinate
         x2, y2 = next_cell.coordinate
 
@@ -134,27 +133,28 @@ class Car(CellAgent):
             # Hay más de una dirección → usa la segunda
             direction_to_check = my_direction[1]
             print(f"Dirección a checar {direction_to_check}")
-
             print(f"Valor x {x2} y {y2}")
+            
             if direction_to_check == "Up":
-                return x1 == x2 and y1 == y2 - 1  # Subir: y aumenta (y_destino > y_actual)
-            elif direction_to_check == "Down":
-                return x1 == x2 and y1 == y2 + 1  # Bajar: y disminuye (y_destino < y_actual)
-            elif direction_to_check == "Right":
-                return y1 == y2 and x1 == x2 - 1  # Derecha: x aumenta
-            elif direction_to_check == "Left":
-                return y1 == y2 and x1 == x2 + 1  # Izquierda: x disminuye
-        else:
-            if road_direction == "Up":
-                return x1 == x2 and y1 == y2 + 1
-            elif road_direction == "Down":
                 return x1 == x2 and y1 == y2 - 1
-            elif road_direction == "Right":
-                return y1 == y2 and x1 == x2 + 1
-            elif road_direction == "Left":
+            elif direction_to_check == "Down":
+                return x1 == x2 and y1 == y2 + 1
+            elif direction_to_check == "Right":
                 return y1 == y2 and x1 == x2 - 1
+            elif direction_to_check == "Left":
+                return y1 == y2 and x1 == x2 + 1
+        else:
+            # CAMBIO: Usar my_direction en lugar de road_direction
+            if my_direction == "Up":
+                return x1 == x2 and y1 == y2 - 1
+            elif my_direction == "Down":
+                return x1 == x2 and y1 == y2 + 1
+            elif my_direction == "Right":
+                return y1 == y2 and x1 == x2 - 1
+            elif my_direction == "Left":
+                return y1 == y2 and x1 == x2 + 1
 
-        return False  # If there is no cell that have those attributes
+        return False
 
 
     def move(self):
