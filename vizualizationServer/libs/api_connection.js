@@ -19,6 +19,7 @@ const obstacles = [];
 const traffic_lights = [];
 const roads = [];
 const cars = [];
+const destinations = [];
 
 // Define the data object
 /// Datos iniciales para la simulación
@@ -203,6 +204,35 @@ async function getRoad() {
 }
 
 /*
+ * Retrieves the current positions of all destinations from the agent server.
+ * Obtiene la información de los destinos (id's, posiciones iniciales)
+ */
+async function getDestinations() {
+    try {
+        // Send a GET request to the agent server to retrieve the obstacle positions
+        let response = await fetch(agent_server_uri + "getDestinations");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new obstacles and add them to the obstacles array
+            for (const destination of result.positions) {
+                const newDestination = new Object3D(destination.id, [destination.x, destination.y, destination.z]);
+                destinations.push(newDestination);
+            }
+            // Log the obstacles array
+            //console.log("Obstacles:", obstacles);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
+/*
  * Updates the agent positions by sending a request to the agent server.
  * Step del modelo y vuelve a llamar a GetAgents para ver sus nuevas posiciones
  */
@@ -215,7 +245,7 @@ async function update() {
         if (response.ok) {
             // Retrieve the updated agent positions
             await getCars();
-            await getTrafficLights();
+            //await getTrafficLights();
             // Log a message indicating that the agents have been updated
             //console.log("Updated agents");
         }
@@ -226,6 +256,6 @@ async function update() {
     }
 }
 
-export {    obstacles, cars, traffic_lights, roads, 
+export {    obstacles, cars, traffic_lights, roads, destinations,
             initAgentsModel, update, 
-            getObstacles, getCars, getTrafficLights, getRoad };
+            getObstacles, getCars, getTrafficLights, getRoad, getDestinations };

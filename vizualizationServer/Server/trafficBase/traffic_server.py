@@ -195,6 +195,42 @@ def getTrafficLights():
             print(e)
             return jsonify({"message": "Error with car positions"}), 500
 
+# This route will be used to get the positions of the road
+@app.route('/getDestinations', methods=['GET'])
+@cross_origin()
+def getDestinations():
+    global randomModel
+
+    if request.method == 'GET':
+        try:
+            # Get the positions of the road and return them to WebGL in JSON.json.t.
+            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a car.
+
+            destinationCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Destination) for obj in cell.agents)
+            )
+            #print(f"CELLS: {roadCells}")
+
+            destinations = [
+                (cell.coordinate, agent)
+                for cell in destinationCells
+                for agent in cell.agents
+                if isinstance(agent, Destination)
+            ]
+            # print(f"AGENTS: {roadCells}")
+
+            destinationPositions = [
+                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                for (coordinate, a) in destinations
+            ]
+            #print(f"ROAD POSITIONS: {destinationPositions}")
+
+            return jsonify({'positions': destinationPositions})
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error with road positions"}), 500
+
+
 # This route will be used to update the model
 # Hace el step del modelo
 @app.route('/update', methods=['GET'])

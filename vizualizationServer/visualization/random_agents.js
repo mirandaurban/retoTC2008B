@@ -19,9 +19,9 @@ import { Camera3D } from '../libs/camera3d';
 
 // Functions and arrays for the communication with the API
 import {
-  cars, obstacles, traffic_lights, roads,
+  cars, obstacles, traffic_lights, roads, destinations,
   initAgentsModel, update, 
-  getObstacles, getCars, getRoad, getTrafficLights,
+  getObstacles, getCars, getRoad, getTrafficLights, getDestinations,
 } from '../libs/api_connection.js';
 
 // Define the shader code, using GLSL 3.00
@@ -70,6 +70,7 @@ async function main() {
   await getCars();
   await getRoad();
   await getTrafficLights();
+  await getDestinations();
 
   // Initialize the scene
   setupScene(); 
@@ -139,7 +140,6 @@ function setupObjects(scene, gl, programInfo) {
      scene.addObject(obstacle);
    }
   
-
   // Copy the properties of the roads
     for (const road of roads) {
      road.arrays = baseCube.arrays;
@@ -158,6 +158,16 @@ function setupObjects(scene, gl, programInfo) {
      tl.scale = { x: 0.5, y: 1, z: 0.5 };
      tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
      scene.addObject(tl);
+    }
+
+  // Copy the properties of the destinations
+  for (const des of destinations) {
+     des.arrays = baseCube.arrays;
+     des.bufferInfo = baseCube.bufferInfo;
+     des.vao = baseCube.vao;
+     des.scale = { x: 0.5, y: 0.1, z: 0.5 };
+     des.color = [0, 1, 0, 1.0]; // VERDE
+     scene.addObject(des);
     }
 }
 
