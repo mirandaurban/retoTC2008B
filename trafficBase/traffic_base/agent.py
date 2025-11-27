@@ -184,20 +184,6 @@ class Car(CellAgent):
                 return y1 == y2 and x1 == x2 - 1
             elif direction_to_check == "Left":
                 return y1 == y2 and x1 == x2 + 1
-            
-        elif (isinstance(my_direction, tuple) and len(my_direction) > 1) and (isinstance(rd, tuple)):
-            # Hay más de una dirección en mi dirección y en la dirección a donde voy ->  usa la segunda
-            road_direction = rd[0]
-            direction_to_check = my_direction[1]
-
-            if (direction_to_check == "Up") and (road_direction == "Up"):
-                return x1 == x2 and y1 == y2 - 1
-            elif direction_to_check == "Down" and (road_direction == "Down"):
-                return x1 == x2 and y1 == y2 + 1
-            elif direction_to_check == "Right" and (road_direction == "Right"):
-                return y1 == y2 and x1 == x2 - 1
-            elif direction_to_check == "Left" and (road_direction == "Left"):
-                return y1 == y2 and x1 == x2 + 1
 
         else:
             # Hay más de una dirección a donde voy
