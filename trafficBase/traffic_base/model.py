@@ -29,6 +29,9 @@ class CityModel(Model):
         # Load the map file
         with open("city_files/2025_base.txt") as baseFile:
             lines = baseFile.readlines()
+            # Limpiar cada línea de saltos de línea y espacios
+            lines = [line.strip() for line in lines if line.strip()]
+            
             self.width = len(lines[0])
             self.height = len(lines)
             
