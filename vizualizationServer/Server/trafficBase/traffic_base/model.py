@@ -52,6 +52,7 @@ class CityModel(Model):
                             False if col == "S" else True,
                             int(dataDictionary[col]),
                         )
+                        #print(f"semáforo en {cell}")
                         self.traffic_lights.append(agent)
 
                     elif col == "#":

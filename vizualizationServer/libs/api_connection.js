@@ -159,8 +159,8 @@ async function getTrafficLights() {
             let result = await response.json();
 
             // Create new traffic lights and add them to the traffic lights array
-            for (const traffic_light of result.positions) {
-                const newTrafficLights = new Object3D(traffic_light.id, [traffic_light.x, traffic_light.y, traffic_lights.z]);
+            for (const tl of result.positions) {
+                const newTrafficLights = new Object3D(tl.id, [tl.x, tl.y, tl.z]);
                 traffic_lights.push(newTrafficLights);
             }
             // Log the obstacles array
@@ -215,6 +215,7 @@ async function update() {
         if (response.ok) {
             // Retrieve the updated agent positions
             await getCars();
+            await getTrafficLights();
             // Log a message indicating that the agents have been updated
             //console.log("Updated agents");
         }

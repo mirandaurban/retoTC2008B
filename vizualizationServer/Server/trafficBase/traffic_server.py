@@ -158,7 +158,7 @@ def getRoad():
             return jsonify({'positions': roadPositions})
         except Exception as e:
             print(e)
-            return jsonify({"message": "Error with car positions"}), 500
+            return jsonify({"message": "Error with road positions"}), 500
 
 # This route will be used to get the positions of the traffic lights
 @app.route('/getTrafficLights', methods=['GET'])

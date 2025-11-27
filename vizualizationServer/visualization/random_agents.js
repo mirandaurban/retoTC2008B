@@ -88,7 +88,6 @@ async function main() {
 }
 
 
-
 function setupScene() {
   let camera = new Camera3D(0,
     15,             // Distance to target
@@ -119,6 +118,7 @@ function setupObjects(scene, gl, programInfo) {
   scene.addObject(ground);
   */
 
+  
   // Copy the properties of the cars
   for (const car of cars) {
      car.arrays = baseCube.arrays;
@@ -127,7 +127,7 @@ function setupObjects(scene, gl, programInfo) {
      car.scale = { x: 0.5, y: 0.5, z: 0.5 };
      scene.addObject(car);
   }
-  
+  /*
   // Copy the properties of the obstacles
     for (const obstacle of obstacles) {
      obstacle.arrays = baseCube.arrays;
@@ -138,6 +138,27 @@ function setupObjects(scene, gl, programInfo) {
      scene.addObject(obstacle);
    }
   
+
+  // Copy the properties of the roads
+    for (const road of roads) {
+     road.arrays = baseCube.arrays;
+     road.bufferInfo = baseCube.bufferInfo;
+     road.vao = baseCube.vao;
+     road.scale = { x: 0.5, y: 0.5, z: 0.5 };
+     road.color = [0.7, 0.7, 0.7, 1.0];
+     scene.addObject(road);
+    }
+  */
+
+  // Copy the properties of the traffic lights
+  for (const tl of traffic_lights) {
+     tl.arrays = baseCube.arrays;
+     tl.bufferInfo = baseCube.bufferInfo;
+     tl.vao = baseCube.vao;
+     tl.scale = { x: 0.5, y: 0.5, z: 0.5 };
+     tl.color = [0.7, 0.7, 0.7, 1.0];
+     scene.addObject(tl);
+    }
 }
 
 // Draw an object with its corresponding transformations
