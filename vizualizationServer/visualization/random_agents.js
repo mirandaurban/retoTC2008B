@@ -90,11 +90,11 @@ async function main() {
 
 function setupScene() {
   let camera = new Camera3D(0,
-    15,             // Distance to target
+    25,             // Distance to target
     4,              // Azimut
-    0.7,              // Elevation
+    1,              // Elevation
     [0, 0, 20],   // Posición que cubra ambos grupos
-    [4, -5, 4]);
+    [5, 0, 5]);
   // These values are empyrical.
   // Maybe find a better way to determine them
   camera.panOffset = [0, 10, 2];
@@ -125,16 +125,17 @@ function setupObjects(scene, gl, programInfo) {
      car.bufferInfo = baseCube.bufferInfo;
      car.vao = baseCube.vao;
      car.scale = { x: 0.5, y: 0.5, z: 0.5 };
+     car.color = [1, 0, 0, 1.0]; // ROJO
      scene.addObject(car);
   }
-  /*
+  
   // Copy the properties of the obstacles
     for (const obstacle of obstacles) {
      obstacle.arrays = baseCube.arrays;
      obstacle.bufferInfo = baseCube.bufferInfo;
      obstacle.vao = baseCube.vao;
-     obstacle.scale = { x: 0.5, y: 0.5, z: 0.5 };
-     obstacle.color = [0.7, 0.7, 0.7, 1.0];
+     obstacle.scale = { x: 0.5, y: 1.5, z: 0.5 };
+     obstacle.color = [0.5, 0.5, 0.5, 1.0]; // GRIS
      scene.addObject(obstacle);
    }
   
@@ -144,19 +145,18 @@ function setupObjects(scene, gl, programInfo) {
      road.arrays = baseCube.arrays;
      road.bufferInfo = baseCube.bufferInfo;
      road.vao = baseCube.vao;
-     road.scale = { x: 0.5, y: 0.5, z: 0.5 };
-     road.color = [0.7, 0.7, 0.7, 1.0];
+     road.scale = { x: 0.5, y: 0.1, z: 0.5 };
+     road.color = [0.2, 0.4, 0.8, 1.0]; // AZUL
      scene.addObject(road);
     }
-  */
-
+  
   // Copy the properties of the traffic lights
   for (const tl of traffic_lights) {
      tl.arrays = baseCube.arrays;
      tl.bufferInfo = baseCube.bufferInfo;
      tl.vao = baseCube.vao;
-     tl.scale = { x: 0.5, y: 0.5, z: 0.5 };
-     tl.color = [0.7, 0.7, 0.7, 1.0];
+     tl.scale = { x: 0.5, y: 1, z: 0.5 };
+     tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
      scene.addObject(tl);
     }
 }
@@ -200,8 +200,9 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
 
   // Model uniforms
   let objectUniforms = {
-    u_transforms: wvpMat
-  }
+    u_transforms: wvpMat,
+    u_color: object.color  // ✅ Pasar el color como uniform
+  };
   twgl.setUniforms(programInfo, objectUniforms);
 
   gl.bindVertexArray(object.vao);
