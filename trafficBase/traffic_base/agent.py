@@ -1,4 +1,5 @@
 from mesa.discrete_space import CellAgent, FixedAgent
+import random
 
 class Car(CellAgent):
     """
@@ -82,6 +83,10 @@ class Car(CellAgent):
                 # If there's a traffic light, check its state
                 # state = True means green (can pass)
                 # state = False means red (cannot pass)
+                if agent.state == True:
+                    self.state = "Exploring"
+                else: 
+                    self.state = "Waiting_traffic_light"
                 #print(agent.state)
                 return agent.state
         
@@ -202,91 +207,76 @@ class Car(CellAgent):
         """
         Move the car according to the road directions
         """
-        # Check if the current cell has road
-        current_road_direction = self.get_road_direction(self.cell)        
-        print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
-        
-        # Obtain all the neighbor cells (radio 1)
+        # Devuelve direccion (Up, down, rigth, left) o para de direcciones (de donde viene, a donde va) si es intersección
+        current_road_direction = self.get_road_direction(self.cell) 
+        # Devuelve todos mis vecinos en radio 1 (array)
         neighbor_cells = self.cell.neighborhood
-        print(f"Celdas vecinas: {[cell.coordinate for cell in neighbor_cells]}")
+        # Devuelve todas las celdas vecinas que son calles (array)
+        road_cells = self.is_cells_a_road() 
+        # Devuelve todas las celdas vecinas que no son osbstaculos
+        non_obstacles_cells = self.is_cells_without_obstacles() 
+        # Coordenada de mi celda destino
+        destination = self.destination.coordinate 
+
+        # Si mi destino está en radio de 1 (neighbor_cells) -> avanzo a destino
+        for neighbor in neighbor_cells:
+            if neighbor.coordinate == destination:
+                # Verificar que no haya obstáculos
+                if neighbor in non_obstacles_cells:
+                    self.cell = neighbor
+                    self.check_if_reached_destination()
+                    return
         
-        # Filter cells to find just the valid ones
-        possible_cells = []
-
-        road_cells = self.is_cells_a_road()
-        non_obstacles_cells = self.is_cells_without_obstacles()
-        destination = [self.destination]
-        print(f"Mi destino: {self.destination.coordinate}")
-        #print(f"Celdas con carretera: {[cell.coordinate for cell in road_cells]}")
-
-        for cell in neighbor_cells:
-            print(f"\n  Evaluando celda {cell.coordinate}:")
-
-            # Check if it is road
-            if cell not in road_cells:
-                print(f"No es carretera")
-                continue
-            #print(f"Es carretera")
-                
-            # Check if has obstacles            
-            if cell not in non_obstacles_cells:
-                #print(f"Tiene obstáculo")
-                continue
-            #print(f"Sin obstáculos")
-                
-            # Check if it has other cars
-            has_cars = any(isinstance(agent, Car) for agent in cell.agents)
-            
-            if has_cars:
-                #print(f"Tiene otro carro")
-                continue
-            #print(f"Sin carros")
-
-            can_pass_traffic_light = self.evaluate_traffic_light(cell)
-            #Check traffic light state before adding to possible cells
+        # Si no tengo mi destino cerca, continúo por las calles
+        # Filtrar celdas válidas: deben ser calles Y no tener obstáculos
+        valid_cells = [cell for cell in road_cells if cell in non_obstacles_cells]
         
-            if not can_pass_traffic_light:
-                #print(f"Semáforo en rojo")
-                continue
-            #print(f"Semáforo permite pasar")
-
-            if cell in destination:
-                print("No es mi destino")
-                continue
-            print("Es mi destino")
-
-            # Check if the movement is valid according to the direction of the road
-
-            cd = self.get_road_direction(cell)
-            if isinstance(cd, tuple):
-                cell_direction = cd[1]
-            else:
-                cell_direction = cd
-            print(f"Dirección de la celda destino: {cell_direction}")
-            
-            # Check if the movement is valid according to the direction of the road
-            is_valid_move = self.validate_road_direction(self.cell, cell)
-            print(f"    {'si' if is_valid_move else 'x'} Movimiento {'válido' if is_valid_move else 'inválido'}")
+        if not valid_cells:
+            # No hay celdas válidas para moverse
+            self.state = "Stuck"
+            return
         
-            if is_valid_move:
-                possible_cells.append(cell)
-
-        print(f"Celdas posibles finales: {[cell.coordinate for cell in possible_cells]}")
-
-        # Move to the first cell, if possible
-        if possible_cells:
-            new_cell = possible_cells[0]
-            print(f" Moviendo a {new_cell.coordinate}")
-            self.update_direction(new_cell)
-            old_position = self.cell.coordinate
-            self.cell = new_cell
-
-            if self.check_if_reached_destination():
-                # Detener la simulación
-                self.model.running = False
-                print(f"Simulación detenida - Carro llegó a su destino")
+        # Determinar la mejor celda siguiendo la dirección del camino
+        next_cell = None
+        
+        if isinstance(current_road_direction, tuple):
+            # Es una intersección, tengo dos direcciones posibles
+            direction1, direction2 = current_road_direction
+            for cell in valid_cells:
+                cell_direction = self.get_direction_to_cell(cell)
+                # Puedo moverme en cualquiera de las dos direcciones de la intersección
+                if cell_direction == direction1 or cell_direction == direction2:
+                    # Verificar semáforo antes de avanzar
+                    if self.evaluate_traffic_light(cell):
+                        next_cell = cell
+                        break
+                    else:
+                        # Semáforo en rojo
+                        self.state = "Waiting_traffic_light"
+                        return
         else:
-            print(f"No hay celdas posibles: El carro está atascado en {self.cell.coordinate}")
+            # Es una calle normal, solo una dirección
+            for cell in valid_cells:
+                cell_direction = self.get_direction_to_cell(cell)
+                if cell_direction == current_road_direction:
+                    # Verificar semáforo antes de avanzar
+                    if self.evaluate_traffic_light(cell):
+                        next_cell = cell
+                        break
+                    else:
+                        # Semáforo en rojo
+                        self.state = "Waiting_traffic_light"
+                        return
+        
+        # Mover el carro si encontramos una celda válida
+        if next_cell:
+            self.cell = next_cell
+            self.state = "Exploring"
+        else:
+            # No hay movimiento válido
+            self.state = "Stuck"
+        
+        
 
     def update_direction(self, next_cell):
         """
@@ -311,34 +301,34 @@ class Car(CellAgent):
         """ 
         Determines the new direction it will take, and then moves
         """
-        # if state == "In_destination":
-        #     return
-    
-        # # 1. comunicación local
-        # self.communicate_with_neighbors()
+
+        if self.state == "In_destination":
+            self.remove()
 
         # # 2. máquina de estados
         # if state == "Following_route":
         #     self.following_path()
             
 
-        # elif state == "Waiting_traffic_light":
-        #     self.evaluate_traffic_light()
+        elif self.state == "Waiting_traffic_light":
+            # Cambiar intervalo a counter semaforo
+            check_interval = 5
+            if self.model.step_count % check_interval == 0:
+                self.evaluate_traffic_light()
 
 
-        # elif state == "Waiting_car":
-        #     has_cars = any(isinstance(agent, Car) for agent in cell.agents)
+        elif self.state == "Waiting_car":
+            check_interval = 1
+            if self.model.step_count % check_interval == 0:
+                self.state = "Exploring"
+                self.move()
 
         # elif state == "Recalculating_route":
         #     a_estrella()
         #     if success: state = "Following_route"
         #     else: state = "Exploring"
 
-        # elif state == "Exploring":
-        #     self.move()
-        #     if free_path_found: state = "Recalculating_route"
-
-        if self.state != "In destination":
+        elif self.state == "Exploring":
             self.move()
 
 
