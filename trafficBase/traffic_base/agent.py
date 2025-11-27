@@ -3,13 +3,14 @@ from mesa.discrete_space import CellAgent, FixedAgent
 class Car(CellAgent):
     """
     State:
-        - "In destination"
+        - "In destination" (highest priority)
         - "Waiting traffic light"
              - Communicating with cooldown 
         - "Waiting other car"
-            - Communicating with cooldown 
-        - "Exploring"
-        - Communicate state of the city
+            - Communicating with cooldown - Cantidad de interacción entre coches - cada n tiempo no pasar por ahí
+        - "Following_route" 
+        - "Recalculating route"
+        - "Exploring" -> Following route (default state, lower priority)
     """
     def __init__(self, model, cell):
         """
@@ -24,7 +25,7 @@ class Car(CellAgent):
         self.current_direction = "Left" 
         self.state = "Exploring"
         self.destination = self.assign_random_destination()
-        print(f"🚗 Carro creado en {self.cell.coordinate} con destino en {self.destination.coordinate if self.destination else 'N/A'}")
+        print(f"Carro creado en {self.cell.coordinate} con destino en {self.destination.coordinate if self.destination else 'N/A'}")
     
     def assign_random_destination(self):
         """
@@ -275,8 +276,8 @@ class Car(CellAgent):
                 # Detener la simulación
                 self.model.running = False
                 print(f"Simulación detenida - Carro llegó a su destino")
-        else:
-            print(f"No hay celdas posibles: El carro está atascado en {self.cell.coordinate}")
+        #else:
+            #print(f"No hay celdas posibles: El carro está atascado en {self.cell.coordinate}")
 
     def update_direction(self, next_cell):
         """
@@ -301,6 +302,33 @@ class Car(CellAgent):
         """ 
         Determines the new direction it will take, and then moves
         """
+        # if state == "In_destination":
+        #     return
+    
+        # # 1. comunicación local
+        # self.communicate_with_neighbors()
+
+        # # 2. máquina de estados
+        # if state == "Following_route":
+        #     self.following_path()
+            
+
+        # elif state == "Waiting_traffic_light":
+        #     self.evaluate_traffic_light()
+
+
+        # elif state == "Waiting_car":
+        #     has_cars = any(isinstance(agent, Car) for agent in cell.agents)
+
+        # elif state == "Recalculating_route":
+        #     a_estrella()
+        #     if success: state = "Following_route"
+        #     else: state = "Exploring"
+
+        # elif state == "Exploring":
+        #     self.move()
+        #     if free_path_found: state = "Recalculating_route"
+
         if self.state != "In destination":
             self.move()
 
