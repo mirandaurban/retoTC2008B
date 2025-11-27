@@ -91,40 +91,71 @@ class Car(CellAgent):
         """
         for agent in cell.agents:
             if isinstance(agent, Road):
-                return agent.direction
+                # Si tiene segunda dirección (intersección), retornar tupla
+                if agent.direction2:
+                    return (agent.direction, agent.direction2)
+                else:
+                    return agent.direction
             elif isinstance(agent, Traffic_Light):
                 return agent.direction
         return None
-
+    
+    
     def validate_road_direction(self, current_cell, next_cell):
-        """
-        Validate if the agent movement is correct according to the road direction
-        """
+        """ Validate if the agent movement is correct according to the road direction """
+        #Debe validar si tiene next_cell tiene dos direcciones (es intersección)
+
         # Obtain coordindates of the current and next cell
         x1, y1 = current_cell.coordinate
         x2, y2 = next_cell.coordinate
 
+        # Obtain the direction of my cell
+        my_direction = self.get_road_direction(self.cell)
+        print(f"mi dir: {my_direction}")
+
         # Obtain the direction of the destiny cell
-        road_direction = self.get_road_direction(next_cell)
+        rd = self.get_road_direction(next_cell)
+
+        if isinstance(my_direction, tuple) and len(my_direction) > 1:
+            # Si rd también es tupla → intersección
+            if isinstance(rd, tuple):
+                road_direction = rd[1]  # segunda dirección del destino
+            else:
+                road_direction = rd     # rd es string → usar completo
+        else:
+            road_direction = rd
 
         if not road_direction:
             return False
 
-        if road_direction == "Down":
-            # X remains equal, while y1 must be greater than y2
-            return x1 == x2 and y1 == y2 + 1
-        elif road_direction == "Up":
-            # X remains equal, while y1 must be less than y2
-            return x1 == x2 and y1 == y2 - 1
-        elif road_direction == "Right":
-            # y reamins equal, while x1 must be less than x2
-            return y1 == y2 and x1 == x2 - 1
-        elif road_direction == "Left":
-            # y reamins equal, while x1 must be greater than x2
-            return y1 == y2 and x1 == x2 + 1
+        print(f"Road direction: {road_direction}")
 
-        return False # If there is no cell that have those attributes
-    
+        if isinstance(my_direction, tuple) and len(my_direction) > 1:
+            # Hay más de una dirección → usa la segunda
+            direction_to_check = my_direction[1]
+            print(f"Dirección a checar {direction_to_check}")
+
+            print(f"Valor x {x2} y {y2}")
+            if direction_to_check == "Up":
+                return x1 == x2 and y1 == y2 - 1  # Subir: y aumenta (y_destino > y_actual)
+            elif direction_to_check == "Down":
+                return x1 == x2 and y1 == y2 + 1  # Bajar: y disminuye (y_destino < y_actual)
+            elif direction_to_check == "Right":
+                return y1 == y2 and x1 == x2 - 1  # Derecha: x aumenta
+            elif direction_to_check == "Left":
+                return y1 == y2 and x1 == x2 + 1  # Izquierda: x disminuye
+        else:
+            if road_direction == "Up":
+                return x1 == x2 and y1 == y2 + 1
+            elif road_direction == "Down":
+                return x1 == x2 and y1 == y2 - 1
+            elif road_direction == "Right":
+                return y1 == y2 and x1 == x2 + 1
+            elif road_direction == "Left":
+                return y1 == y2 and x1 == x2 - 1
+
+        return False  # If there is no cell that have those attributes
+
 
     def move(self):
         """
@@ -132,11 +163,11 @@ class Car(CellAgent):
         """
         # Check if the current cell has road
         current_road_direction = self.get_road_direction(self.cell)        
-        #print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
+        print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
         
         # Obtain all the neighbor cells (radio 1)
         neighbor_cells = self.cell.neighborhood
-        # print(f"Celdas vecinas: {[cell.coordinate for cell in neighbor_cells]}")
+        print(f"Celdas vecinas: {[cell.coordinate for cell in neighbor_cells]}")
         
         # Filter cells to find just the valid ones
         possible_cells = []
@@ -144,41 +175,66 @@ class Car(CellAgent):
         road_cells = self.is_cells_a_road()
         non_obstacles_cells = self.is_cells_without_obstacles()
 
+        print(f"Celdas con carretera: {[cell.coordinate for cell in road_cells]}")
+
         for cell in neighbor_cells:
+            print(f"\n  Evaluando celda {cell.coordinate}:")
 
             # Check if it is road
             if cell not in road_cells:
+                print(f"No es carretera")
                 continue
+            print(f"Es carretera")
                 
             # Check if has obstacles            
             if cell not in non_obstacles_cells:
+                print(f"Tiene obstáculo")
                 continue
+            print(f"Sin obstáculos")
                 
             # Check if it has other cars
             has_cars = any(isinstance(agent, Car) for agent in cell.agents)
             
             if has_cars:
+                print(f"Tiene otro carro")
                 continue
+            print(f"Sin carros")
 
             can_pass_traffic_light = self.evaluate_traffic_light(cell)
             #Check traffic light state before adding to possible cells
         
             if not can_pass_traffic_light:
+                print(f"Semáforo en rojo")
                 continue
+            print(f"Semáforo permite pasar")
+
+            # Check if the movement is valid according to the direction of the road
+
+            cd = self.get_road_direction(cell)
+            if isinstance(cd, tuple):
+                cell_direction = cd[1]
+            else:
+                cell_direction = cd
+            print(f"Dirección de la celda destino: {cell_direction}")
             
             # Check if the movement is valid according to the direction of the road
             is_valid_move = self.validate_road_direction(self.cell, cell)
-            
+            print(f"    {'si' if is_valid_move else 'x'} Movimiento {'válido' if is_valid_move else 'inválido'}")
+        
             if is_valid_move:
                 possible_cells.append(cell)
-        print(possible_cells)
+
+        print(f"Celdas posibles finales: {[cell.coordinate for cell in possible_cells]}")
+
         # Move to the first cell, if possible
         if possible_cells:
             new_cell = possible_cells[0]
-            print(new_cell)
+            print(f" Moviendo a {new_cell.coordinate}")
             self.update_direction(new_cell)
             old_position = self.cell.coordinate
             self.cell = new_cell
+        else:
+            print(f" NO HAY CELDAS POSIBLES - El carro está atascado en {self.cell.coordinate}")
 
     def update_direction(self, next_cell):
         """

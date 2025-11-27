@@ -24,7 +24,7 @@ class CityModel(Model):
         self.traffic_lights = []
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open("city_files/2022_base.txt") as baseFile:
+        with open("city_files/2025_base.txt") as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])
             self.height = len(lines)
@@ -80,7 +80,8 @@ class CityModel(Model):
 
         # Crear un coche inicial en la celda 1,1
        #cell_inicial = self.grid[6,15]
-        cell_inicial = self.grid[0,24]     
+        #cell_inicial = self.grid[0,12]    
+        cell_inicial = self.grid[0,23]   
         agent = Car(
             self, cell=cell_inicial
         )
