@@ -15,7 +15,6 @@ import { Object3D } from '../libs/object3d';
 const agent_server_uri = "http://localhost:8585/";
 
 // Initialize arrays to store agents and obstacles
-const agents = [];
 const obstacles = [];
 const traffic_lights = [];
 const roads = [];
@@ -64,10 +63,10 @@ async function initAgentsModel() {
  * Regresa toda la infomación de los agentes (id, pos en x,y,z)
  * Aquí se debe de modificar si se requiere info extra
  */
-async function getAgents() {
+async function getCars() {
     try {
         // Send a GET request to the agent server to retrieve the agent positions
-        let response = await fetch(agent_server_uri + "getAgents");
+        let response = await fetch(agent_server_uri + "getCars");
 
         // Check if the response was successful
         if (response.ok) {
@@ -80,13 +79,13 @@ async function getAgents() {
             // Check if the agents array is empty
             // Poner la visualización inicial de los agentes
             // Se debe de cambiar esto para poder agregar nuevos agentes
-            if (agents.length == 0) {
+            if (cars.length == 0) {
                 // Create new agents and add them to the agents array
-                for (const agent of result.positions) {
-                    const newAgent = new Object3D(agent.id, [agent.x, agent.y, agent.z]);
+                for (const car of result.positions) {
+                    const newCar = new Object3D(car.id, [car.x, car.y, car.z]);
                     // Store the initial position
-                    newAgent['oldPosArray'] = newAgent.posArray;
-                    agents.push(newAgent);
+                    newCar['oldPosArray'] = newCar.posArray;
+                    cars.push(newCar);
                 }
                 // Log the agents array
                 //console.log("Agents:", agents);
@@ -94,14 +93,14 @@ async function getAgents() {
             } else { // Para iteraciones futuras, actualizar la posición
                 // Update the positions of existing agents
                 // Sincronización entre el objeto de Mesa y el de WebGL
-                for (const agent of result.positions) {
-                    const current_agent = agents.find((object3d) => object3d.id == agent.id);
+                for (const car of result.positions) {
+                    const current_car = cars.find((object3d) => object3d.id == car.id);
 
                     // Check if the agent exists in the agents array
-                    if(current_agent != undefined){
+                    if(current_car != undefined){
                         // Update the agent's position
-                        current_agent.oldPosArray = current_agent.posArray;
-                        current_agent.position = {x: agent.x, y: agent.y, z: agent.z};
+                        current_car.oldPosArray = current_car.posArray;
+                        current_car.position = {x: car.x, y: car.y, z: car.z};
                     }
 
                     //console.log("OLD: ", current_agent.oldPosArray,
@@ -134,35 +133,6 @@ async function getObstacles() {
             for (const obstacle of result.positions) {
                 const newObstacle = new Object3D(obstacle.id, [obstacle.x, obstacle.y, obstacle.z]);
                 obstacles.push(newObstacle);
-            }
-            // Log the obstacles array
-            //console.log("Obstacles:", obstacles);
-        }
-
-    } catch (error) {
-        // Log any errors that occur during the request
-        console.log(error);
-    }
-}
-
-/*
- * Retrieves the current positions of all cars from the agent server.
- * Obtiene la información de los carros (id's, posiciones iniciales)
- */
-async function getCars() {
-    try {
-        // Send a GET request to the agent server to retrieve the car positions
-        let response = await fetch(agent_server_uri + "getCars");
-
-        // Check if the response was successful
-        if (response.ok) {
-            // Parse the response as JSON
-            let result = await response.json();
-
-            // Create new car and add them to the car array
-            for (const car of result.positions) {
-                const newCar = new Object3D(car.id, [car.x, car.y, car.z]);
-                cars.push(newCar);
             }
             // Log the obstacles array
             //console.log("Obstacles:", obstacles);
@@ -244,7 +214,7 @@ async function update() {
         // Check if the response was successful
         if (response.ok) {
             // Retrieve the updated agent positions
-            await getAgents();
+            await getCars();
             // Log a message indicating that the agents have been updated
             //console.log("Updated agents");
         }
@@ -255,6 +225,6 @@ async function update() {
     }
 }
 
-export { agents, obstacles, cars, traffic_lights, roads, 
+export {    obstacles, cars, traffic_lights, roads, 
             initAgentsModel, update, 
-            getAgents, getObstacles, getCars, getTrafficLights, getRoad };
+            getObstacles, getCars, getTrafficLights, getRoad };

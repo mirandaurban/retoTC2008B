@@ -55,10 +55,10 @@ def initModel():
 ### Get info from all the agents ###
 ####################################
 
-# This route will be used to get the positions of the agents
-@app.route('/getAgents', methods=['GET'])
+# This route will be used to get the positions of the agent car
+@app.route('/getCars', methods=['GET'])
 @cross_origin()
-def getAgents():
+def getCars():
     global randomModel
 
     if request.method == 'GET':
@@ -66,26 +66,26 @@ def getAgents():
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
         try:
-            agentCells = randomModel.grid.all_cells.select(
+            carCells = randomModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
             ).cells
             # print(f"CELLS: {agentCells}")
 
-            agents = [
-            (cell.coordinate, agent)
-            for cell in agentCells
-            for agent in cell.agents
-            if isinstance(agent, Car)
+            cars = [
+                (cell.coordinate, agent)
+                for cell in carCells
+                for agent in cell.agents
+                if isinstance(agent, Car)
             ]
-            # print(f"AGENTS: {agents}")
+            # print(f"AGENTS: {cars}")
 
-            agentPositions = [
-                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
-                for (coordinate, a) in agents
+            carPositions = [
+                {"id": str(car.unique_id), "x": coordinate[0], "y": 1, "z": coordinate[1]}
+                for (coordinate, car) in cars
             ]
-            # print(f"AGENT POSITIONS: {agentPositions}")
+            # print(f"AGENT POSITIONS: {carPositions}")
 
-            return jsonify({'positions': agentPositions})
+            return jsonify({'positions': carPositions})
         except Exception as e:
             print(e)
             return jsonify({"message": "Error with the agent positions"}), 500
@@ -125,40 +125,6 @@ def getObstacles():
             print(e)
             return jsonify({"message": "Error with the agent positions"}), 500
 
-# This route will be used to get the positions of the cars
-@app.route('/getCars', methods=['GET'])
-@cross_origin()
-def getCars():
-    global randomModel
-
-    if request.method == 'GET':
-        try:
-            # Get the positions of the cars and return them to WebGL in JSON.json.t.
-            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a car.
-
-            carCells = randomModel.grid.all_cells.select(
-                lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
-            )
-            #print(f"CELLS: {carCells}")
-
-            agents = [
-                (cell.coordinate, agent)
-                for cell in carCells
-                for agent in cell.agents
-                if isinstance(agent, Car)
-            ]
-            #print(f"AGENTS: {agents}")
-
-            carPositions = [
-                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
-                for (coordinate, a) in agents
-            ]
-            print(f"CAR POSITIONS: {carPositions}")
-
-            return jsonify({'positions': carPositions})
-        except Exception as e:
-            print(e)
-            return jsonify({"message": "Error with car positions"}), 500
 
 # This route will be used to get the positions of the road
 @app.route('/getRoad', methods=['GET'])
