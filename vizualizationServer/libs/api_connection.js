@@ -17,6 +17,9 @@ const agent_server_uri = "http://localhost:8585/";
 // Initialize arrays to store agents and obstacles
 const agents = [];
 const obstacles = [];
+const traffic_lights = [];
+const roads = [];
+const cars = [];
 
 // Define the data object
 /// Datos iniciales para la simulación
@@ -143,6 +146,93 @@ async function getObstacles() {
 }
 
 /*
+ * Retrieves the current positions of all cars from the agent server.
+ * Obtiene la información de los carros (id's, posiciones iniciales)
+ */
+async function getCars() {
+    try {
+        // Send a GET request to the agent server to retrieve the car positions
+        let response = await fetch(agent_server_uri + "getCars");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new car and add them to the car array
+            for (const car of result.positions) {
+                const newCar = new Object3D(car.id, [car.x, car.y, car.z]);
+                cars.push(newCar);
+            }
+            // Log the obstacles array
+            //console.log("Obstacles:", obstacles);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
+/*
+ * Retrieves the current positions of all traffic lights from the agent server.
+ * Obtiene la información de los semáforos (id's, posiciones iniciales)
+ */
+async function getTrafficLights() {
+    try {
+        // Send a GET request to the agent server to retrieve the traffic lights positions
+        let response = await fetch(agent_server_uri + "getTrafficLights");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new traffic lights and add them to the traffic lights array
+            for (const traffic_light of result.positions) {
+                const newTrafficLights = new Object3D(traffic_light.id, [traffic_light.x, traffic_light.y, traffic_lights.z]);
+                traffic_lights.push(newTrafficLights);
+            }
+            // Log the obstacles array
+            //console.log("Obstacles:", obstacles);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
+/*
+ * Retrieves the current positions of all road cells from the agent server.
+ * Obtiene la información de las celdas de camino (id's, posiciones iniciales)
+ */
+async function getRoad() {
+    try {
+        // Send a GET request to the agent server to retrieve the road positions
+        let response = await fetch(agent_server_uri + "getRoad");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new road and add them to the road array
+            for (const road of result.positions) {
+                const newRoad = new Object3D(road.id, [road.x, road.y, road.z]);
+                roads.push(newRoad);
+            }
+            // Log the obstacles array
+            //console.log("Obstacles:", obstacles);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
+/*
  * Updates the agent positions by sending a request to the agent server.
  * Step del modelo y vuelve a llamar a GetAgents para ver sus nuevas posiciones
  */
@@ -165,4 +255,6 @@ async function update() {
     }
 }
 
-export { agents, obstacles, initAgentsModel, update, getAgents, getObstacles };
+export { agents, obstacles, cars, traffic_lights, roads, 
+            initAgentsModel, update, 
+            getAgents, getObstacles, getCars, getTrafficLights, getRoad };

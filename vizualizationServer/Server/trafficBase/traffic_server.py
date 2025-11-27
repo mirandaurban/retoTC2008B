@@ -15,6 +15,10 @@ height = 28
 randomModel = None
 currentStep = 0
 
+########################################################################
+### Initialize the interaction between the simulation and the server ###
+########################################################################
+
 # This application will be used to interact with WebGL
 # Flask es una librería que permite hacer un servidor 
 app = Flask("Traffic example")
@@ -47,6 +51,10 @@ def initModel():
     return jsonify({"message": f"Parameters recieved, model initiated.\nSize: {width}x{height}"})
 
 
+####################################
+### Get info from all the agents ###
+####################################
+
 # This route will be used to get the positions of the agents
 @app.route('/getAgents', methods=['GET'])
 @cross_origin()
@@ -59,7 +67,7 @@ def getAgents():
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
         try:
             agentCells = randomModel.grid.all_cells.select(
-                lambda cell: any(isinstance(obj, CityModel) for obj in cell.agents)
+                lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
             ).cells
             # print(f"CELLS: {agentCells}")
 
@@ -67,7 +75,7 @@ def getAgents():
             (cell.coordinate, agent)
             for cell in agentCells
             for agent in cell.agents
-            if isinstance(agent, CityModel)
+            if isinstance(agent, Car)
             ]
             # print(f"AGENTS: {agents}")
 
@@ -89,33 +97,138 @@ def getObstacles():
     global randomModel
 
     if request.method == 'GET':
+        # Get the positions of the agents and return them to WebGL in JSON.json.t.
+        # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
+        # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
         try:
-            # Get the positions of the obstacles and return them to WebGL in JSON.json.t.
-            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of an obstacle.
-
-            obstacleCells = randomModel.grid.all_cells.select(
-                lambda cell: any(isinstance(obj, Obstacle) for obj in cell.agents)
-            )
+            agentCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
+            ).cells
             # print(f"CELLS: {agentCells}")
 
             agents = [
-                (cell.coordinate, agent)
-                for cell in obstacleCells
-                for agent in cell.agents
-                if isinstance(agent, Obstacle)
+            (cell.coordinate, agent)
+            for cell in agentCells
+            for agent in cell.agents
+            if isinstance(agent, Car)
             ]
             # print(f"AGENTS: {agents}")
 
-            obstaclePositions = [
+            agentPositions = [
                 {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
                 for (coordinate, a) in agents
             ]
-            # print(f"OBSTACLE POSITIONS: {obstaclePositions}")
+            # print(f"AGENT POSITIONS: {agentPositions}")
 
-            return jsonify({'positions': obstaclePositions})
+            return jsonify({'positions': agentPositions})
         except Exception as e:
             print(e)
-            return jsonify({"message": "Error with obstacle positions"}), 500
+            return jsonify({"message": "Error with the agent positions"}), 500
+
+# This route will be used to get the positions of the cars
+@app.route('/getCars', methods=['GET'])
+@cross_origin()
+def getCars():
+    global randomModel
+
+    if request.method == 'GET':
+        try:
+            # Get the positions of the cars and return them to WebGL in JSON.json.t.
+            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a car.
+
+            carCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
+            )
+            #print(f"CELLS: {carCells}")
+
+            agents = [
+                (cell.coordinate, agent)
+                for cell in carCells
+                for agent in cell.agents
+                if isinstance(agent, Car)
+            ]
+            #print(f"AGENTS: {agents}")
+
+            carPositions = [
+                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                for (coordinate, a) in agents
+            ]
+            print(f"CAR POSITIONS: {carPositions}")
+
+            return jsonify({'positions': carPositions})
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error with car positions"}), 500
+
+# This route will be used to get the positions of the road
+@app.route('/getRoad', methods=['GET'])
+@cross_origin()
+def getRoad():
+    global randomModel
+
+    if request.method == 'GET':
+        try:
+            # Get the positions of the road and return them to WebGL in JSON.json.t.
+            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a car.
+
+            roadCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Road) for obj in cell.agents)
+            )
+            #print(f"CELLS: {roadCells}")
+
+            agents = [
+                (cell.coordinate, agent)
+                for cell in roadCells
+                for agent in cell.agents
+                if isinstance(agent, Road)
+            ]
+            # print(f"AGENTS: {roadCells}")
+
+            roadPositions = [
+                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                for (coordinate, a) in agents
+            ]
+            #print(f"ROAD POSITIONS: {roadPositions}")
+
+            return jsonify({'positions': roadPositions})
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error with car positions"}), 500
+
+# This route will be used to get the positions of the traffic lights
+@app.route('/getTrafficLights', methods=['GET'])
+@cross_origin()
+def getTrafficLights():
+    global randomModel
+
+    if request.method == 'GET':
+        try:
+            # Get the positions of the traffic lights and return them to WebGL in JSON.json.t.
+            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a traffic lights.
+
+            trafficLightsCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Traffic_Light) for obj in cell.agents)
+            )
+            # print(f"CELLS: {trafficLightsCells}")
+
+            agents = [
+                (cell.coordinate, agent)
+                for cell in trafficLightsCells
+                for agent in cell.agents
+                if isinstance(agent, Traffic_Light)
+            ]
+            # print(f"AGENTS: {trafficLightsCells}")
+
+            trafficLightsPositions = [
+                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                for (coordinate, a) in agents
+            ]
+            # print(f"TRAFFIC LIGHTS POSITIONS: {trafficLightsPositions}")
+
+            return jsonify({'positions': trafficLightsPositions})
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error with car positions"}), 500
 
 # This route will be used to update the model
 # Hace el step del modelo

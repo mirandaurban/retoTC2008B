@@ -21,7 +21,7 @@ class CityModel(Model):
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
         dataDictionary = json.load(open("./trafficBase/city_files/mapDictionary.json"))
-        print(dataDictionary)
+        # print(dataDictionary)
 
         self.num_agents = N
         self.traffic_lights = []
@@ -61,7 +61,7 @@ class CityModel(Model):
                         agent = Destination(self, cell)
 
         # Crear un coche inicial en la celda 1,1
-        cell_inicial = self.grid[0,24]    
+        cell_inicial = self.grid[20,4]    
         agent = Car(
             self, cell=cell_inicial
         )

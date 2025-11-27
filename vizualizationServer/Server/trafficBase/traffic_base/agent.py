@@ -105,7 +105,7 @@ class Car(CellAgent):
         """
         # Check if the current cell has road
         current_road_direction = self.get_road_direction(self.cell)        
-        print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
+        # print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
         
         # Obtain all the neighbor cells (radio 1)
         neighbor_cells = self.cell.neighborhood
@@ -142,7 +142,7 @@ class Car(CellAgent):
         # Move to the first cell, if possible
         if possible_cells:
             new_cell = possible_cells[0]
-            print(new_cell)
+            # print(new_cell)
             self.update_direction(new_cell)
             old_position = self.cell.coordinate
             self.cell = new_cell

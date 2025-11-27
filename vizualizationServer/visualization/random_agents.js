@@ -19,8 +19,9 @@ import { Camera3D } from '../libs/camera3d';
 
 // Functions and arrays for the communication with the API
 import {
-  agents, obstacles, initAgentsModel,
-  update, getAgents, getObstacles
+  agents, obstacles, cars, traffic_lights, roads,
+  initAgentsModel, update, 
+  getAgents, getObstacles, getCars, getRoad, getTrafficLights,
 } from '../libs/api_connection.js';
 
 // Define the shader code, using GLSL 3.00
@@ -67,7 +68,9 @@ async function main() {
   // Get the agents and obstacles
   await getAgents();
   await getObstacles();
-
+  await getCars();
+  await getRoad();
+  await getTrafficLights();
 
   // Initialize the scene
   setupScene(); 
@@ -89,14 +92,14 @@ async function main() {
 
 function setupScene() {
   let camera = new Camera3D(0,
-    10,             // Distance to target
+    7,             // Distance to target
     4,              // Azimut
-    0.8,              // Elevation
+    0.7,              // Elevation
     [0, 0, 10],
     [0, 0, 0]);
   // These values are empyrical.
   // Maybe find a better way to determine them
-  camera.panOffset = [0, 8, 0];
+  camera.panOffset = [0, 10, 2];
   scene.setCamera(camera);
   scene.camera.setupControls();
 }
@@ -119,22 +122,32 @@ function setupObjects(scene, gl, programInfo) {
 
   // Copy the properties of the base objects
   for (const agent of agents) {
-    agent.arrays = baseCube.arrays;
-    agent.bufferInfo = baseCube.bufferInfo;
-    agent.vao = baseCube.vao;
-    agent.scale = { x: 0.5, y: 0.5, z: 0.5 };
-    scene.addObject(agent);
+     agent.arrays = baseCube.arrays;
+     agent.bufferInfo = baseCube.bufferInfo;
+     agent.vao = baseCube.vao;
+     agent.scale = { x: 0.5, y: 0.5, z: 0.5 };
+     scene.addObject(agent);
   }
 
-  // Copy the properties of the base objects
-  for (const agent of obstacles) {
-    agent.arrays = baseCube.arrays;
-    agent.bufferInfo = baseCube.bufferInfo;
-    agent.vao = baseCube.vao;
-    agent.scale = { x: 0.5, y: 0.5, z: 0.5 };
-    agent.color = [0.7, 0.7, 0.7, 1.0];
-    scene.addObject(agent);
-  }
+  // // Copy the properties of the obstacles
+  // for (const obstacle of obstacles) {
+  //   obstacle.arrays = baseCube.arrays;
+  //   obstacle.bufferInfo = baseCube.bufferInfo;
+  //   obstacle.vao = baseCube.vao;
+  //   obstacle.scale = { x: 0.5, y: 0.5, z: 0.5 };
+  //   obstacle.color = [0.7, 0.7, 0.7, 1.0];
+  //   scene.addObject(obstacle);
+  // }
+
+  // // Copy the properties of the cars
+  // for (const car of cars) {
+  //   car.arrays = baseCube.arrays;
+  //   car.bufferInfo = baseCube.bufferInfo;
+  //   car.vao = baseCube.vao;
+  //   car.scale = { x: 0.2, y: 0.2, z: 0.2 };
+  //   car.color = [1, 0, 0, 1.0];
+  //   scene.addObject(car);
+  // }
 
 }
 
