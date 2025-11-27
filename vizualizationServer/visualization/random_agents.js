@@ -19,7 +19,7 @@ import { Camera3D } from '../libs/camera3d';
 
 // Functions and arrays for the communication with the API
 import {
-  obstacles, cars, traffic_lights, roads,
+  cars, obstacles, traffic_lights, roads,
   initAgentsModel, update, 
   getObstacles, getCars, getRoad, getTrafficLights,
 } from '../libs/api_connection.js';
@@ -91,11 +91,11 @@ async function main() {
 
 function setupScene() {
   let camera = new Camera3D(0,
-    7,             // Distance to target
+    15,             // Distance to target
     4,              // Azimut
     0.7,              // Elevation
-    [0, 0, 10],
-    [0, 0, 0]);
+    [0, 0, 20],   // Posición que cubra ambos grupos
+    [4, -5, 4]);
   // These values are empyrical.
   // Maybe find a better way to determine them
   camera.panOffset = [0, 10, 2];
@@ -119,7 +119,7 @@ function setupObjects(scene, gl, programInfo) {
   scene.addObject(ground);
   */
 
-  // Copy the properties of the base objects
+  // Copy the properties of the cars
   for (const car of cars) {
      car.arrays = baseCube.arrays;
      car.bufferInfo = baseCube.bufferInfo;
@@ -127,27 +127,17 @@ function setupObjects(scene, gl, programInfo) {
      car.scale = { x: 0.5, y: 0.5, z: 0.5 };
      scene.addObject(car);
   }
-
-  // // Copy the properties of the obstacles
-  // for (const obstacle of obstacles) {
-  //   obstacle.arrays = baseCube.arrays;
-  //   obstacle.bufferInfo = baseCube.bufferInfo;
-  //   obstacle.vao = baseCube.vao;
-  //   obstacle.scale = { x: 0.5, y: 0.5, z: 0.5 };
-  //   obstacle.color = [0.7, 0.7, 0.7, 1.0];
-  //   scene.addObject(obstacle);
-  // }
-
-  // // Copy the properties of the cars
-  // for (const car of cars) {
-  //   car.arrays = baseCube.arrays;
-  //   car.bufferInfo = baseCube.bufferInfo;
-  //   car.vao = baseCube.vao;
-  //   car.scale = { x: 0.2, y: 0.2, z: 0.2 };
-  //   car.color = [1, 0, 0, 1.0];
-  //   scene.addObject(car);
-  // }
-
+  
+  // Copy the properties of the obstacles
+    for (const obstacle of obstacles) {
+     obstacle.arrays = baseCube.arrays;
+     obstacle.bufferInfo = baseCube.bufferInfo;
+     obstacle.vao = baseCube.vao;
+     obstacle.scale = { x: 0.5, y: 0.5, z: 0.5 };
+     obstacle.color = [0.7, 0.7, 0.7, 1.0];
+     scene.addObject(obstacle);
+   }
+  
 }
 
 // Draw an object with its corresponding transformations

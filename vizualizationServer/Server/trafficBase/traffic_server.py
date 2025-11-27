@@ -101,30 +101,29 @@ def getObstacles():
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
         try:
-            agentCells = randomModel.grid.all_cells.select(
-                lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
+            obstacleCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Obstacle) for obj in cell.agents)
             ).cells
-            # print(f"CELLS: {agentCells}")
+            # print(f"CELLS: {obstacleCells}")
 
-            agents = [
-            (cell.coordinate, agent)
-            for cell in agentCells
-            for agent in cell.agents
-            if isinstance(agent, Car)
+            obstacles = [
+                (cell.coordinate, agent)
+                for cell in obstacleCells
+                for agent in cell.agents
+                if isinstance(agent, Obstacle)
             ]
-            # print(f"AGENTS: {agents}")
+            # print(f"AGENTS: {obstacles}")
 
-            agentPositions = [
-                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
-                for (coordinate, a) in agents
+            obstaclePositions = [
+                {"id": str(obs.unique_id), "x": coordinate[0], "y": 1, "z": coordinate[1]}
+                for (coordinate, obs) in obstacles
             ]
-            # print(f"AGENT POSITIONS: {agentPositions}")
+            # print(f"AGENT POSITIONS: {obstaclePositions}")
 
-            return jsonify({'positions': agentPositions})
+            return jsonify({'positions': obstaclePositions})
         except Exception as e:
             print(e)
             return jsonify({"message": "Error with the agent positions"}), 500
-
 
 # This route will be used to get the positions of the road
 @app.route('/getRoad', methods=['GET'])
