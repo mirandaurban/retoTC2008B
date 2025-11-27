@@ -22,8 +22,49 @@ class Car(CellAgent):
         self.cell = cell
         self.initial_direction = "Left" # Posición inicial default (cambiar después)
         self.current_direction = "Left" 
-        self.state = "Exploring" 
+        self.state = "Exploring"
+        self.destination = self.assign_random_destination()
+        print(f"🚗 Carro creado en {self.cell.coordinate} con destino en {self.destination.coordinate if self.destination else 'N/A'}")
+    
+    def assign_random_destination(self):
+        """
+        Assign a random destination from all available destinations in the model
+        """
+        # Obtener todas las celdas del grid
+        all_cells = self.model.grid.all_cells
         
+        # Filtrar celdas que contienen objetos Destination
+        destination_cells = [
+            cell for cell in all_cells 
+            if any(isinstance(agent, Destination) for agent in cell.agents)
+        ]
+        
+        if destination_cells:
+            # Seleccionar un destino aleatorio
+            import random
+            chosen_destination = random.choice(destination_cells)
+            
+            # Obtener el agente Destination de esa celda
+            for agent in chosen_destination.agents:
+                if isinstance(agent, Destination):
+                    return chosen_destination
+        
+        return None
+
+    def check_if_reached_destination(self):
+        """
+        Verifica si el carro ha llegado a su destino
+        """
+        if self.destination is None:
+            return False
+        
+        # Verificar si la celda actual es el destino
+        if self.cell.coordinate == self.destination.coordinate:
+            print(f"Destino alcanzado, carro llegó a {self.cell.coordinate}")
+            self.state = "In destination"
+            return True
+        
+        return False
 
     def evaluate_traffic_light(self, next_cell):
         """
@@ -100,7 +141,6 @@ class Car(CellAgent):
                 return agent.direction
         return None
     
-    
     def validate_road_direction(self, current_cell, next_cell):
         """ Validate if the agent movement is correct according to the road direction """
         
@@ -110,7 +150,7 @@ class Car(CellAgent):
 
         # Obtain the direction of my cell
         my_direction = self.get_road_direction(self.cell)
-        print(f"mi dir: {my_direction}")
+        #print(f"mi dir: {my_direction}")
 
         # Obtain the direction of the destiny cell
         rd = self.get_road_direction(next_cell)
@@ -127,13 +167,12 @@ class Car(CellAgent):
         if not road_direction:
             return False
 
-        print(f"Road direction: {road_direction}")
+        #print(f"Road direction: {road_direction}")
 
         if isinstance(my_direction, tuple) and len(my_direction) > 1:
             # Hay más de una dirección → usa la segunda
             direction_to_check = my_direction[1]
-            print(f"Dirección a checar {direction_to_check}")
-            print(f"Valor x {x2} y {y2}")
+            #print(f"Dirección a checar {direction_to_check}")
             
             if direction_to_check == "Up":
                 return x1 == x2 and y1 == y2 - 1
@@ -144,7 +183,6 @@ class Car(CellAgent):
             elif direction_to_check == "Left":
                 return y1 == y2 and x1 == x2 + 1
         else:
-            # CAMBIO: Usar my_direction en lugar de road_direction
             if my_direction == "Up":
                 return x1 == x2 and y1 == y2 - 1
             elif my_direction == "Down":
@@ -156,18 +194,17 @@ class Car(CellAgent):
 
         return False
 
-
     def move(self):
         """
         Move the car according to the road directions
         """
         # Check if the current cell has road
         current_road_direction = self.get_road_direction(self.cell)        
-        print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
+        #print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
         
         # Obtain all the neighbor cells (radio 1)
         neighbor_cells = self.cell.neighborhood
-        print(f"Celdas vecinas: {[cell.coordinate for cell in neighbor_cells]}")
+        #print(f"Celdas vecinas: {[cell.coordinate for cell in neighbor_cells]}")
         
         # Filter cells to find just the valid ones
         possible_cells = []
@@ -175,38 +212,38 @@ class Car(CellAgent):
         road_cells = self.is_cells_a_road()
         non_obstacles_cells = self.is_cells_without_obstacles()
 
-        print(f"Celdas con carretera: {[cell.coordinate for cell in road_cells]}")
+        #print(f"Celdas con carretera: {[cell.coordinate for cell in road_cells]}")
 
         for cell in neighbor_cells:
-            print(f"\n  Evaluando celda {cell.coordinate}:")
+            #print(f"\n  Evaluando celda {cell.coordinate}:")
 
             # Check if it is road
             if cell not in road_cells:
-                print(f"No es carretera")
+                #print(f"No es carretera")
                 continue
-            print(f"Es carretera")
+            #print(f"Es carretera")
                 
             # Check if has obstacles            
             if cell not in non_obstacles_cells:
-                print(f"Tiene obstáculo")
+                #print(f"Tiene obstáculo")
                 continue
-            print(f"Sin obstáculos")
+            #print(f"Sin obstáculos")
                 
             # Check if it has other cars
             has_cars = any(isinstance(agent, Car) for agent in cell.agents)
             
             if has_cars:
-                print(f"Tiene otro carro")
+                #print(f"Tiene otro carro")
                 continue
-            print(f"Sin carros")
+            #print(f"Sin carros")
 
             can_pass_traffic_light = self.evaluate_traffic_light(cell)
             #Check traffic light state before adding to possible cells
         
             if not can_pass_traffic_light:
-                print(f"Semáforo en rojo")
+                #print(f"Semáforo en rojo")
                 continue
-            print(f"Semáforo permite pasar")
+            #print(f"Semáforo permite pasar")
 
             # Check if the movement is valid according to the direction of the road
 
@@ -215,26 +252,31 @@ class Car(CellAgent):
                 cell_direction = cd[1]
             else:
                 cell_direction = cd
-            print(f"Dirección de la celda destino: {cell_direction}")
+            #print(f"Dirección de la celda destino: {cell_direction}")
             
             # Check if the movement is valid according to the direction of the road
             is_valid_move = self.validate_road_direction(self.cell, cell)
-            print(f"    {'si' if is_valid_move else 'x'} Movimiento {'válido' if is_valid_move else 'inválido'}")
+            #print(f"    {'si' if is_valid_move else 'x'} Movimiento {'válido' if is_valid_move else 'inválido'}")
         
             if is_valid_move:
                 possible_cells.append(cell)
 
-        print(f"Celdas posibles finales: {[cell.coordinate for cell in possible_cells]}")
+        #print(f"Celdas posibles finales: {[cell.coordinate for cell in possible_cells]}")
 
         # Move to the first cell, if possible
         if possible_cells:
             new_cell = possible_cells[0]
-            print(f" Moviendo a {new_cell.coordinate}")
+            #print(f" Moviendo a {new_cell.coordinate}")
             self.update_direction(new_cell)
             old_position = self.cell.coordinate
             self.cell = new_cell
+
+            if self.check_if_reached_destination():
+                # Detener la simulación
+                self.model.running = False
+                print(f"Simulación detenida - Carro llegó a su destino")
         else:
-            print(f" NO HAY CELDAS POSIBLES - El carro está atascado en {self.cell.coordinate}")
+            print(f"No hay celdas posibles: El carro está atascado en {self.cell.coordinate}")
 
     def update_direction(self, next_cell):
         """
@@ -255,13 +297,12 @@ class Car(CellAgent):
         
         self.current_direction = direction_map.get((dx, dy), self.current_direction)
 
-        
-
     def step(self):
         """ 
         Determines the new direction it will take, and then moves
         """
-        self.move()
+        if self.state != "In destination":
+            self.move()
 
 
 class Traffic_Light(FixedAgent):
