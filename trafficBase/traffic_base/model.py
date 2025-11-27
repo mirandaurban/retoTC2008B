@@ -80,6 +80,8 @@ class CityModel(Model):
             (0, self.height - 1),            # Esquina superior izquierda
             (self.width - 1, self.height - 1) # Esquina superior derecha
         ]
+
+        graph = self.create_graph()
         
         # Spawn del primer carro
         self.spawn_car()
@@ -100,6 +102,63 @@ class CityModel(Model):
         self.cars_spawned += 1
         
         print(f"Carro {self.cars_spawned} spawneado en posición {spawn_pos}")
+
+    ###
+    ### Sección de cálculo de rutas --- Algoritmo A *
+    ###
+
+    def create_graph(self):
+        """ Check the map and create a graph according to its road and destination cells """
+        graph = []
+
+        # Detect all the nodes (road and destination cells)
+        cells_with_destination = self.agents.select(lambda x: isinstance(x, Destination))
+        cells_with_road = self.agents.select(lambda x: isinstance(x, Road))
+
+        nodes = cells_with_destination | cells_with_road
+
+        # Add parameters for each node
+        for node in nodes:
+            node_info = self.node_args(node)
+            graph.append(node_info)
+
+        return graph
+
+    def node_args(self, node):
+        """ Add arguments to each node of the graph """
+        position = node.cell
+        direction = nod
+        g = float('inf'), # Cost from start to this node (default: infinity)
+        h = 0.0 # Estimated cost from this node to goal
+        f = 0 # Distancia acumulada
+        parent = None
+
+        node = {
+            'position': position,
+            'g': g,
+            'h': h,
+            'f': f,
+            'parent': parent
+        }
+        
+        #print(f"Information: {node}")
+        return node
+
+    def heuristic_function(pos1, pos2):
+        """ Calculate the heuristic function with the euclidean distance """
+        x1, y1 = pos1
+        x2, y2 = pos2
+        return sqrt(pow((x2 - x1), 2)+ pow((y2 - y1), 2))
+
+    def get_neighbors(graph):
+        """ Obtain all the possible paths in the graph (neighbors of the node) """
+
+    def find_path()
+        """ Find the optimal path using A* algorithm. """
+        # Initialize start node
+        
+
+            
     
     def step(self):
         """Advance the model by one step."""
@@ -107,6 +166,7 @@ class CityModel(Model):
         
         # Spawn de un nuevo carro cada 10 steps
         if self.steps_count % 10 == 0:
+
             self.spawn_car()
         
         self.agents.shuffle_do("step")

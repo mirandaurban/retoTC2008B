@@ -1,4 +1,5 @@
 from mesa.discrete_space import CellAgent, FixedAgent
+from math import sqrt
 
 class Car(CellAgent):
     """
@@ -26,7 +27,7 @@ class Car(CellAgent):
         self.state = "Exploring"
         self.destination = self.assign_random_destination()
         print(f"Carro creado en {self.cell.coordinate} con destino en {self.destination.coordinate if self.destination else 'N/A'}")
-    
+
     def assign_random_destination(self):
         """
         Assign a random destination from all available destinations in the model
