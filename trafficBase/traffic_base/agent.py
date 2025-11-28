@@ -330,6 +330,9 @@ class Car(CellAgent):
 
         elif self.state == "Exploring":
             self.move()
+        
+        elif self.state == "Stuck":
+            print(f"Carro atascado en {self.cell.coordinate}")
 
 
 class Traffic_Light(FixedAgent):
