@@ -257,7 +257,7 @@ class Car(CellAgent):
         else:
             # Es una calle normal, solo una dirección
             for cell in valid_cells:
-                cell_direction = self.get_direction_to_cell(cell)
+                cell_direction = self.get_road_direction(cell)
                 if cell_direction == current_road_direction:
                     # Verificar semáforo antes de avanzar
                     if self.evaluate_traffic_light(cell):
