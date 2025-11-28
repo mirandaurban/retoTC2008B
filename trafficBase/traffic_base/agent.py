@@ -64,7 +64,7 @@ class Car(CellAgent):
         # Verificar si la celda actual es el destino
         if self.cell.coordinate == self.destination.coordinate:
             print(f"Destino alcanzado, carro llegó a {self.cell.coordinate}")
-            self.state = "In destination"
+            self.state = "In_destination"
             return True
         
         return False
