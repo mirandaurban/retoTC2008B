@@ -276,7 +276,6 @@ class Car(CellAgent):
             # No hay movimiento válido
             self.state = "Stuck"
         
-        
 
     def update_direction(self, next_cell):
         """
@@ -314,7 +313,8 @@ class Car(CellAgent):
             # Cambiar intervalo a counter semaforo
             check_interval = 5
             if self.model.step_count % check_interval == 0:
-                self.evaluate_traffic_light()
+                self.state = "Exploring"
+                self.move()
 
 
         elif self.state == "Waiting_car":
