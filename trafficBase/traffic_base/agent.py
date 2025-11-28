@@ -243,7 +243,7 @@ class Car(CellAgent):
             # Es una intersección, tengo dos direcciones posibles
             direction1, direction2 = current_road_direction
             for cell in valid_cells:
-                cell_direction = self.get_direction_to_cell(cell)
+                cell_direction = self.get_road_direction(cell)
                 # Puedo moverme en cualquiera de las dos direcciones de la intersección
                 if cell_direction == direction1 or cell_direction == direction2:
                     # Verificar semáforo antes de avanzar
