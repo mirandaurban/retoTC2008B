@@ -27,16 +27,10 @@ class Car(CellAgent):
         self.cell = cell
         self.initial_direction = "Left" # Posición inicial default (cambiar después)
         self.current_direction = "Left" 
-        self.state = "Following_route"  # Cambiar estado inicial
+        self.state = "Following_route"
         self.destination = self.assign_random_destination()
         self.path = path  # Guardar la ruta
         self.path_index = 0  # Índice actual en la ruta
-        #print(f"Carro creado en {self.cell.coordinate} con destino en {self.destination.coordinate if self.destination else 'N/A'}")
-        if self.path:
-            print(f"Ruta asignada: {len(self.path)} pasos")
-        else:
-            print("ADVERTENCIA: No se asignó ruta al carro")
-            self.state = "Exploring"
 
     def assign_random_destination(self):
         """
@@ -64,42 +58,39 @@ class Car(CellAgent):
 
     def follow_path(self):
         """
-        Sigue la ruta calculada por A*
+        Follow the route obtained by using the algorithm A*
         """
-        if not self.path or self.path_index >= len(self.path) - 1:
-            print("No hay ruta o ya se completó")
+        if not self.path:
+            print("No hay ruta")
             self.state = "Exploring"
+            return False
+        if self.path_index >= len(self.path) - 1:
+            print("Ruta completada")
             return False
         
         # Obtener la siguiente posición en la ruta
         next_coords = self.path[self.path_index + 1]
-        
-        # Convertir coordenadas a celda
         next_cell = self.model.grid[next_coords]
         
-        # Verificar si podemos movernos a la siguiente celda
+        # Verificar si el movimiento a la siguiente celda es básico
         if self.can_move_to_cell(next_cell):
-            # Mover a la siguiente celda
             old_position = self.cell.coordinate
             self.cell = next_cell
             self.path_index += 1
             self.update_direction(next_cell)
-            
-            print(f"Carro se movió de {old_position} a {self.cell.coordinate} (paso {self.path_index}/{len(self.path)-1})")
-            
+                        
             # Verificar si llegó al destino
             if self.check_if_reached_destination():
                 self.state = "In destination"
                 return True
             return True
         else:
-            print(f"No se puede mover a {next_coords}, recalculando ruta...")
             self.state = "Recalculating route"
             return False
 
     def can_move_to_cell(self, next_cell):
         """
-        Verifica si puede moverse a la celda objetivo
+        Check if the cell can move to an specific locatiom
         """
         # Verificar obstáculos
         if any(isinstance(agent, Obstacle) for agent in next_cell.agents):
@@ -121,7 +112,7 @@ class Car(CellAgent):
 
     def recalculate_route(self):
         """
-        Recalcula la ruta usando A* desde la posición actual
+        Recalculating the route using A*
         """
         if self.destination is None:
             print("No hay destino, no se puede recalcular ruta")
@@ -130,35 +121,24 @@ class Car(CellAgent):
         
         current_coords = self.cell.coordinate
         destination_coords = self.destination.coordinate
-        
-        print(f"Recalculando ruta desde {current_coords} a {destination_coords}")
-        
+                
         new_path = self.model.find_path(current_coords, destination_coords)
         
         if new_path:
             self.path = new_path
             self.path_index = 0
             self.state = "Following_route"
-            print(f"Nueva ruta calculada: {len(new_path)} pasos")
         else:
-            print("No se pudo encontrar una nueva ruta")
             self.state = "Exploring"
-
-    def explore(self):
-        """
-        Comportamiento de exploración cuando no hay ruta
-        """
-        # Usar tu lógica original de movimiento
-        self.move()
 
     def step(self):
         """ 
-        Determina el nuevo comportamiento según el estado
+        Uses a state machine to control the movements of the car
         """
         if self.state == "In destination":
+            self.remove()
             return
         
-        # Máquina de estados
         if self.state == "Following_route":
             success = self.follow_path()
             if not success:
@@ -168,9 +148,9 @@ class Car(CellAgent):
             self.recalculate_route()
         
         elif self.state == "Exploring":
-            self.explore()
+            self.move()
             
-            # Intentar recalcular ruta periódicamente mientras explora
+            # Recalcular ruta mientras explora
             if self.model.steps_count % 5 == 0 and self.destination:
                 current_coords = self.cell.coordinate
                 destination_coords = self.destination.coordinate
@@ -179,9 +159,7 @@ class Car(CellAgent):
                     self.path = new_path
                     self.path_index = 0
                     self.state = "Following_route"
-                    print(f"Ruta encontrada durante exploración")
 
-    # MANTENER TODAS TUS FUNCIONES ORIGINALES AQUÍ...
     def check_if_reached_destination(self):
         """
         Verifica si el carro ha llegado a su destino
@@ -347,11 +325,9 @@ class Car(CellAgent):
         """
         # Check if the current cell has road
         current_road_direction = self.get_road_direction(self.cell)        
-        #print(f"Carro en celda {self.cell.coordinate} con dirección de carretera: {current_road_direction}")
         
         # Obtain all the neighbor cells (radio 1)
         neighbor_cells = self.cell.neighborhood
-        #print(f"Celdas vecinas: {[cell.coordinate for cell in neighbor_cells]}")
         
         # Filter cells to find just the valid ones
         possible_cells = []
@@ -359,9 +335,7 @@ class Car(CellAgent):
         road_cells = self.is_cells_a_road()
         non_obstacles_cells = self.is_cells_without_obstacles()
         destination = [self.destination]
-        #print(f"Mi destino: {self.destination.coordinate}")
-        ##print(f"Celdas con carretera: {[cell.coordinate for cell in road_cells]}")
-
+      
         for cell in neighbor_cells:
             #print(f"\n  Evaluando celda {cell.coordinate}:")
 

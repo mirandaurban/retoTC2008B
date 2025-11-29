@@ -2,6 +2,7 @@ from mesa import Model
 from mesa.discrete_space import OrthogonalMooreGrid
 from .agent import *
 import json
+
 import random
 import math
 from collections import deque
@@ -85,12 +86,6 @@ class CityModel(Model):
         # Inicializar grafo con todos los nodos de camino y destino
         self.graph = self.create_graph()
         
-        # DEBUG: Verificar el grafo
-        print(f"DEBUG: Grafo creado con {len(self.graph)} nodos")
-        if len(self.graph) > 0:
-            sample_key = list(self.graph.keys())[0]
-            print(f"DEBUG: Ejemplo - nodo {sample_key} tiene vecinos: {self.graph[sample_key]}")
-        
         # Spawn del primer carro
         self.spawn_car()
         
@@ -99,28 +94,23 @@ class CityModel(Model):
     def spawn_car(self):
         """Crear un carro en una esquina aleatoria"""
         if self.cars_spawned >= self.num_agents:
-            return
+            return  # Ya se alcanzó el número máximo de carros
         
+        # Elegir una esquina aleatoria
         spawn_pos = self.random.choice(self.spawn_corners)
         cell_inicial = self.grid[spawn_pos]
         
         # Obtener destino aleatorio
         destination_pos = self.get_random_destination()
         
-        if destination_pos is None:
-            print("DEBUG: No se encontró destino válido")
-            return
-        
         # Convertir a coordenadas
         start_coords = spawn_pos
         goal_coords = self.get_coordinates_from_cell(destination_pos)
-        
-        print(f"DEBUG: Buscando ruta de {start_coords} a {goal_coords}")
-        
-        # Encontrar ruta
+                
+        # Determinar ruta
         path_to_follow = self.find_path(start_coords, goal_coords)
         
-        # Crear carro CON la ruta
+        # Crear carro con la ruta
         agent = Car(self, cell=cell_inicial, path=path_to_follow)
         self.cars_spawned += 1
         
@@ -131,54 +121,39 @@ class CityModel(Model):
     ###
 
     def get_coordinates_from_cell(self, cell):
-        """Convert GridCell object to (x, y) coordinates"""
-        # Dependiendo de cómo esté implementado GridCell en Mesa
-        # Puede ser cell.pos, cell.coordinate, o simplemente la tupla
-        if hasattr(cell, 'pos'):
-            return cell.pos
-        elif hasattr(cell, 'coordinate'):
-            return cell.coordinate
-        else:
-            # Si es directamente una tupla
-            return cell
+        """Convert to coordinates"""
+        return cell.coordinate
 
     def create_graph(self):
         """Check the map and create a graph according to its road and destination cells"""
         graph = {}
 
-        # Usar solo self.agents como en tu approach original
-        #cells_with_destination = [agent for agent in self.agents if isinstance(agent, Destination)]
+        # Calcular la ruta con todos los posibles caminos 
+        # Después añadir destino
         cells_with_road = [agent for agent in self.agents if isinstance(agent, Road)]
         
-        #nodes = cells_with_destination + cells_with_road
+        # nodes = cells_with_destination + cells_with_road
         nodes = cells_with_road
 
-
-        # Crear un diccionario de posición a agente para búsqueda rápida
+        # Crear un diccionario de posición a agente
         self.position_to_agent = {}
         for agent in nodes:
-            # Convertir GridCell a coordenadas
             pos = self.get_coordinates_from_cell(agent.cell)
             self.position_to_agent[pos] = agent
 
         for agent in nodes:
-            pos = self.get_coordinates_from_cell(agent.cell)  # Convertir a coordenadas (x, y)
+            pos = self.get_coordinates_from_cell(agent.cell) 
             neighbors = self.get_neighbors(pos)
             graph[pos] = neighbors
             
-            # DEBUG para los primeros nodos
-            if len(graph) <= 5:
-                print(f"DEBUG: Nodo {pos} -> {len(neighbors)} vecinos: {neighbors}")
-
         return graph
 
     def get_neighbors(self, pos):
         """Get all valid neighbors for a given position usando solo self.agents"""
-        # CORRECCIÓN: pos ya son coordenadas (x, y) gracias a get_coordinates_from_cell
-        x, y = pos  # Desempaquetar las coordenadas directamente
+        x, y = pos  
         neighbors = []
         
-        # Check all adjacent cells (up, down, left, right)
+        # Check all adjacent cells
         possible_moves = [(x, y+1), (x, y-1), (x+1, y), (x-1, y)]
         
         for neighbor_pos in possible_moves:
@@ -203,21 +178,13 @@ class CityModel(Model):
     def find_path(self, start_pos, goal_pos):
         """Find the optimal path using A* algorithm"""
 
-        print(f"DEBUG: find_path llamado con start={start_pos}, goal={goal_pos}")
-        print(f"DEBUG: start_pos en grafo: {start_pos in self.graph}")
-        print(f"DEBUG: goal_pos en grafo: {goal_pos in self.graph}")
-        
         # Check if start and goal are valid positions
         if start_pos not in self.graph:
-            print(f"DEBUG: start_pos {start_pos} no está en el grafo")
             return None
         
         if goal_pos not in self.graph:
-            print(f"DEBUG: goal_pos {goal_pos} no está en el grafo")
             return None
-        
-        print("DEBUG: Ambas posiciones están en el grafo. Iniciando A*...")
-        
+                
         # Initialize open and closed lists
         open_list = []
         closed_list = set()
@@ -231,8 +198,6 @@ class CityModel(Model):
             'parent': None
         }
         start_node['f'] = start_node['g'] + start_node['h']
-
-        print(f"DEBUG: Nodo inicial: {start_node}")
         
         open_list.append(start_node)
         
@@ -247,9 +212,7 @@ class CityModel(Model):
             
             # Check if we reached the goal
             if current_node['position'] == goal_pos:
-                print(f"DEBUG: Meta alcanzada después de {iterations} iteraciones")
                 path = self.reconstruct_path(current_node)
-                print(f"DEBUG: Camino encontrado: {len(path)} pasos")
                 return path
             
             # Move current node from open to closed list
@@ -263,7 +226,7 @@ class CityModel(Model):
                 if neighbor_pos in closed_list:
                     continue
                 
-                # Calculate tentative g score
+                # Calculate g score
                 tentative_g = current_node['g'] + 1
                 
                 # Check if neighbor is in open list
@@ -291,7 +254,6 @@ class CityModel(Model):
                     neighbor_in_open['f'] = neighbor_in_open['g'] + neighbor_in_open['h']
                     neighbor_in_open['parent'] = current_node
         
-        print(f"DEBUG: No se encontró camino después de {iterations} iteraciones")
         return None
 
     def reconstruct_path(self, node):
@@ -313,7 +275,7 @@ class CityModel(Model):
         
         if destinations:
             destination_agent = self.random.choice(destinations)
-            return destination_agent.cell  # Esto devuelve un GridCell
+            return destination_agent.cell 
         return None
             
     def step(self):
