@@ -111,7 +111,7 @@ class CityModel(Model):
         path_to_follow = self.find_path(start_coords, goal_coords)
         
         # Crear carro con la ruta
-        agent = Car(self, cell=cell_inicial, path=path_to_follow)
+        agent = Car(self, cell=cell_inicial, destination=destination_pos, path=path_to_follow)
         self.cars_spawned += 1
         
         print(f"Carro {self.cars_spawned} spawneado en {spawn_pos} con ruta: {'SÍ' if path_to_follow else 'NO'}")
@@ -177,14 +177,27 @@ class CityModel(Model):
 
     def find_path(self, start_pos, goal_pos):
         """Find the optimal path using A* algorithm"""
+        
+        # Crear una copia del grafo base y agregar el destino específico
+        temp_graph = self.graph.copy()
+        
+        # Si el goal_pos no está en el grafo, agregarlo temporalmente
+        if goal_pos not in temp_graph:
+            temp_graph[goal_pos] = self.get_neighbors(goal_pos)
+            
+            # También agregar conexiones desde los vecinos hacia el destino
+            for neighbor_pos in temp_graph[goal_pos]:
+                if neighbor_pos in temp_graph:
+                    if goal_pos not in temp_graph[neighbor_pos]:
+                        temp_graph[neighbor_pos] = temp_graph[neighbor_pos] + [goal_pos]
 
         # Check if start and goal are valid positions
-        if start_pos not in self.graph:
+        if start_pos not in temp_graph:
             return None
         
-        if goal_pos not in self.graph:
+        if goal_pos not in temp_graph:
             return None
-                
+                    
         # Initialize open and closed lists
         open_list = []
         closed_list = set()
@@ -219,8 +232,8 @@ class CityModel(Model):
             open_list.remove(current_node)
             closed_list.add(current_node['position'])
             
-            # Explore neighbors
-            current_neighbors = self.graph.get(current_node['position'], [])
+            # Explore neighbors usando el grafo temporal
+            current_neighbors = temp_graph.get(current_node['position'], [])
             
             for neighbor_pos in current_neighbors:
                 if neighbor_pos in closed_list:

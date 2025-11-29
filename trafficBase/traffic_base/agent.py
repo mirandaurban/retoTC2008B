@@ -15,7 +15,7 @@ class Car(CellAgent):
         - "Recalculating route"
         - "Exploring" -> Following route (default state, lower priority)
     """
-    def __init__(self, model, cell, path):
+    def __init__(self, model, cell, destination, path):
         """
         Creates a new random agent.
         Args:
@@ -28,7 +28,7 @@ class Car(CellAgent):
         self.initial_direction = "Left" # Posición inicial default (cambiar después)
         self.current_direction = "Left" 
         self.state = "Following_route"
-        self.destination = self.assign_random_destination()
+        self.destination = destination
         self.path = path  # Guardar la ruta
         self.path_index = 0  # Índice actual en la ruta
 
