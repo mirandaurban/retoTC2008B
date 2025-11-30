@@ -34,7 +34,7 @@ def post_process(ax):
 
 
 model_params = {
-    "N": 1,
+    "N": 1000,
     "seed": {
         "type": "InputText",
         "value": 42,

@@ -4,7 +4,6 @@ from .agent import *
 import json
 import random
 import math
-from collections import deque
 
 class CityModel(Model):
     """
@@ -74,20 +73,14 @@ class CityModel(Model):
         
         # Definir las esquinas de spawn
         self.spawn_corners = [
-            (0, 0),                          # Esquina inferior izquierda
-            (self.width - 1, 0),             # Esquina inferior derecha
-            (0, self.height - 1),            # Esquina superior izquierda
+            (0, 0),                           # Esquina inferior izquierda
+            (self.width - 1, 0),              # Esquina inferior derecha
+            (0, self.height - 1),             # Esquina superior izquierda
             (self.width - 1, self.height - 1) # Esquina superior derecha
         ]
 
-        # Inicializar grafo DIRECCIONAL
+        # Inicializar grafo 
         self.graph = self.create_directional_graph()
-        
-        # Debug: imprimir información del grafo
-        self.print_graph_info()
-        
-        # Spawn del primer carro
-        self.spawn_car()
         
         self.running = True
 
@@ -130,7 +123,7 @@ class CityModel(Model):
         return moves.get(direction)
 
     def get_valid_directions(self, current_pos, symbol):
-        """Get directions that are actually possible from current position (considering borders)"""
+        """Get directions that are possible from current position """
         allowed_directions = self.get_directions_from_symbol(symbol)
         valid_directions = []
         
@@ -150,10 +143,10 @@ class CityModel(Model):
         return valid_directions
 
     def create_directional_graph(self):
-        """Create a directed graph that respects road directions - SIMPLIFIED VERSION"""
+        """Create a directed graph that respects road directions"""
         graph = {}
         
-        print("Creando grafo direccional SIMPLIFICADO...")
+        print("Creando grafo direccional")
         
         # Para cada posición en el mapa, determinar conexiones salientes
         for current_pos, symbol in self.map_grid.items():
@@ -162,7 +155,7 @@ class CityModel(Model):
                 
             graph[current_pos] = []
             
-            # Obtener direcciones válidas (considerando bordes y obstáculos)
+            # Obtener direcciones válidas
             valid_directions = self.get_valid_directions(current_pos, symbol)
             
             # Para cada dirección válida, crear la conexión SIN validación bidireccional
@@ -170,13 +163,12 @@ class CityModel(Model):
                 next_pos = self.get_move_from_direction(direction, current_pos)
                 next_symbol = self.map_grid.get(next_pos, "#")
                 
-                # CONEXIÓN SIMPLIFICADA: Si podemos movernos ahí y no es obstáculo, creamos la conexión
-                # NO requerimos que la celda destino tenga la dirección opuesta
+                # Si podemos movernos ahí y no es obstáculo -> crar la conexión
                 if next_symbol != "#":
                     cost = self.calculate_cost(symbol, next_symbol)
                     graph[current_pos].append((next_pos, cost))
         
-        # Ahora verificar y agregar conexiones para destinos
+        # Verificar y agregar conexiones para destinos
         self.add_destination_connections(graph)
         
         return graph
@@ -198,7 +190,7 @@ class CityModel(Model):
                                 graph[adj_pos].append((pos, 1))
 
     def can_move_to(self, from_pos, to_pos):
-        """Check if from_pos can move to to_pos based on road directions"""
+        """Check if the actual cell can reach the nex cell based on road directions"""
         from_symbol = self.map_grid.get(from_pos, "#")
         if from_symbol == "#":
             return False
@@ -241,22 +233,8 @@ class CityModel(Model):
         return cost
 
     def print_graph_info(self):
-        """Print debug information about the graph"""
+        """Print information about the graph"""
         print(f"Tamaño del grafo: {len(self.graph)} nodos")
-        
-        # Verificar spawn corners
-        for corner in self.spawn_corners:
-            if corner in self.graph:
-                connections = len(self.graph[corner])
-                symbol = self.map_grid.get(corner, "?")
-                valid_dirs = self.get_valid_directions(corner, symbol)
-                
-                print(f"\nSpawn {corner} ({symbol}):")
-                print(f"  Conexiones salientes: {connections}")
-                if connections > 0:
-                    for next_pos, cost in self.graph[corner]:
-                        next_symbol = self.map_grid.get(next_pos, "?")
-                        print(f"    -> {next_pos} ({next_symbol})")
         
         # Verificar conectividad general
         total_connections = sum(len(connections) for connections in self.graph.values())
@@ -270,73 +248,63 @@ class CityModel(Model):
     def spawn_car(self):
         """Crear un carro en una esquina aleatoria"""
         if self.cars_spawned >= self.num_agents:
-            return
+            return 
         
         max_attempts = 10
         attempts = 0
         
         while attempts < max_attempts:
             attempts += 1
-        
-        # Elegir una esquina aleatoria que sea transitable y tenga conexiones
-        valid_spawns = []
-        for corner in self.spawn_corners:
-            if corner in self.graph and self.graph[corner]:  # Debe tener conexiones salientes
-                valid_spawns.append(corner)
-        
-        if not valid_spawns:
-            print("ERROR: No hay esquinas válidas para spawn con conexiones")
-            # Intentar usar cualquier celda de road como spawn de emergencia
-            road_cells = [pos for pos, sym in self.map_grid.items() 
-                        if sym not in ["#", "D"] and pos in self.graph and self.graph[pos]]
-            if road_cells:
-                emergency_spawn = self.random.choice(road_cells)
-                print(f"Usando spawn de emergencia: {emergency_spawn}")
-                valid_spawns = [emergency_spawn]
-            else:
-                print("ERROR CRÍTICO: No hay celdas válidas para spawn")
+            
+            valid_spawns = []
+            for corner in self.spawn_corners:
+                if corner in self.graph and self.graph[corner]:
+                    if not any(isinstance(agent, Car) for agent in self.grid[corner].agents):
+                        valid_spawns.append(corner)
+            
+            if not valid_spawns:
+                road_cells = [pos for pos, sym in self.map_grid.items() 
+                            if sym not in ["#", "D"] and pos in self.graph and self.graph[pos]]
+                road_cells = [pos for pos in road_cells 
+                            if not any(isinstance(agent, Car) for agent in self.grid[pos].agents)]
+                if road_cells:
+                    emergency_spawn = self.random.choice(road_cells)
+                    valid_spawns = [emergency_spawn]
+                else:
+                    continue
+            
+            spawn_pos = self.random.choice(valid_spawns)
+            destination_pos = self.get_random_destination()
+            if not destination_pos:
+                continue
+                
+            path_to_follow = self.find_path(spawn_pos, destination_pos)
+            
+            if path_to_follow:
+                cell_inicial = self.grid[spawn_pos]
+                destination_cell = self.grid[destination_pos]
+                
+                agent = Car(self, cell=cell_inicial, destination=destination_cell, path=path_to_follow)
+                self.cars_spawned += 1
+                # print(f"✓ Carro {self.cars_spawned} en {spawn_pos} -> {destination_pos} ({len(path_to_follow)} pasos)")
                 return
-            
-        spawn_pos = self.random.choice(valid_spawns)
         
-        # Obtener destino aleatorio que esté en el grafo
-        destination_pos = self.get_random_destination()
-        if not destination_pos:
-            print("ERROR: No hay destinos disponibles")
-            return
-            
-        print(f"Buscando ruta desde {spawn_pos} hacia {destination_pos}...")
-        
-        # Encontrar ruta usando A* direccional
-        path_to_follow = self.find_path(spawn_pos, destination_pos)
-        
-        if path_to_follow:
-            cell_inicial = self.grid[spawn_pos]
-            
-            # CORRECCIÓN: Convertir la tupla destination_pos a un objeto Cell
-            destination_cell = self.grid[destination_pos]
-            
-            agent = Car(self, cell=cell_inicial, destination=destination_cell, path=path_to_follow)
-            self.cars_spawned += 1
-            print(f"✓ Carro {self.cars_spawned} spawneado en {spawn_pos} con ruta de {len(path_to_follow)} pasos")
-            return
-        else:
-            print(f"✗ No se pudo encontrar ruta desde {spawn_pos} hacia {destination_pos}")
-            
+        print(f"No se pudo spawnear carro")
+
     def heuristic_function(self, pos1, pos2):
-        """Manhattan distance heuristic for grid"""
+        """Euclidean distance heuristic for grid"""
         x1, y1 = pos1
         x2, y2 = pos2
-        return abs(x1 - x2) + abs(y1 - y2)
+        return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
     def find_path(self, start_pos, goal_pos):
         """Find optimal path using A* with directional graph"""
         if start_pos not in self.graph:
-            print(f"ERROR: Start position {start_pos} not in graph")
+            # print(f"ERROR: Start position {start_pos} not in graph")
             return None
             
         if goal_pos not in self.graph:
-            print(f"ERROR: Goal position {goal_pos} not in graph")
+            # print(f"ERROR: Goal position {goal_pos} not in graph")
             return None
             
         # Initialize open and closed lists
@@ -406,8 +374,7 @@ class CityModel(Model):
                     neighbor_in_open['f'] = neighbor_in_open['g'] + neighbor_in_open['h']
                     neighbor_in_open['parent'] = current_node
         
-        print(f"✗ A* no encontró ruta después de {iterations} iteraciones")
-        print(f"  Nodos explorados: {len(closed_list)}")
+        # print(f"  Nodos explorados: {len(closed_list)}")
         return None
 
     def reconstruct_path(self, node):
@@ -439,7 +406,8 @@ class CityModel(Model):
         """Advance the model by one step."""
         self.steps_count += 1
         
-        # Spawn de un nuevo carro cada 10 steps, SOLO si no hemos alcanzado el límite
+        active_cars = sum(1 for agent in self.agents if isinstance(agent, Car) and agent.state != "In destination")
+      
         if self.steps_count % 10 == 0 and self.cars_spawned < self.num_agents:
             self.spawn_car()
         

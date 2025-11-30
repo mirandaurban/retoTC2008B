@@ -1,7 +1,6 @@
 from mesa.discrete_space import CellAgent, FixedAgent
 from math import sqrt
 import random
-from math import sqrt
 
 class Car(CellAgent):
     """
@@ -31,30 +30,6 @@ class Car(CellAgent):
         self.destination = destination
         self.path = path  # Guardar la ruta
         self.path_index = 0  # Índice actual en la ruta
-
-    def assign_random_destination(self):
-        """
-        Assign a random destination from all available destinations in the model
-        """
-        # Obtener todas las celdas del grid
-        all_cells = self.model.grid.all_cells
-        
-        # Filtrar celdas que contienen objetos Destination
-        destination_cells = [
-            cell for cell in all_cells 
-            if any(isinstance(agent, Destination) for agent in cell.agents)
-        ]
-        
-        if destination_cells:
-            # Seleccionar un destino aleatorio
-            chosen_destination = random.choice(destination_cells)
-            
-            # Obtener el agente Destination de esa celda
-            for agent in chosen_destination.agents:
-                if isinstance(agent, Destination):
-                    return chosen_destination
-        
-        return None
 
     def follow_path(self):
         """
@@ -167,13 +142,14 @@ class Car(CellAgent):
         if self.destination is None:
             return False
         
-        # CORRECCIÓN: Comparar coordenadas en lugar de objetos completos
-        if isinstance(self.destination, tuple):
-            # Si destination es una tupla (x, y)
-            return self.cell.coordinate == self.destination
-        else:
-            # Si destination es un objeto Cell
-            return self.cell.coordinate == self.destination.coordinate
+        # Comparar coordenadas
+        if self.cell.coordinate == self.destination.coordinate:
+            # print(f"Carro llegó a destino en {self.cell.coordinate}, eliminando...")
+            self.remove() 
+            self.state = "In destination"
+            return True
+        
+        return False
 
     def evaluate_traffic_light(self, next_cell):
         """
