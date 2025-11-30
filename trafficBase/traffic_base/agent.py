@@ -167,13 +167,13 @@ class Car(CellAgent):
         if self.destination is None:
             return False
         
-        # Verificar si la celda actual es el destino
-        if self.cell.coordinate == self.destination.coordinate:
-            #print(f"Destino alcanzado, carro llegó a {self.cell.coordinate}")
-            self.state = "In destination"
-            return True
-        
-        return False
+        # CORRECCIÓN: Comparar coordenadas en lugar de objetos completos
+        if isinstance(self.destination, tuple):
+            # Si destination es una tupla (x, y)
+            return self.cell.coordinate == self.destination
+        else:
+            # Si destination es un objeto Cell
+            return self.cell.coordinate == self.destination.coordinate
 
     def evaluate_traffic_light(self, next_cell):
         """
