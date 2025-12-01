@@ -1,32 +1,32 @@
-/*
- * Base program for a 3D scene that connects to an API to get the movement
- * of agents.
- * The scene shows colored cubes
- *
- * Gilberto Echeverria
- * 2025-11-08
- */
+"use strict";
 
-
-'use strict';
-
-import * as twgl from 'twgl-base.js';
-import GUI from 'lil-gui';
-import { M4 } from '../libs/3d-lib';
-import { Scene3D } from '../libs/scene3d';
-import { Object3D } from '../libs/object3d';
-import { Camera3D } from '../libs/camera3d';
+import * as twgl from "twgl-base.js";
+import GUI from "lil-gui";
+import { M4 } from "../libs/3d-lib";
+import { Scene3D } from "../libs/scene3d";
+import { Object3D } from "../libs/object3d";
+import { Camera3D } from "../libs/camera3d";
 
 // Functions and arrays for the communication with the API
 import {
-  cars, obstacles, traffic_lights, roads, destinations,
-  initAgentsModel, update, 
-  getObstacles, getCars, getRoad, getTrafficLights, getDestinations,
-} from '../libs/api_connection.js';
+  cars,
+  obstacles,
+  traffic_lights,
+  roads,
+  destinations,
+  initAgentsModel,
+  update,
+  getObstacles,
+  getCars,
+  getRoad,
+  getTrafficLights,
+  getDestinations,
+} from "../libs/api_connection.js";
 
 // Define the shader code, using GLSL 3.00
-import vsGLSL from '../assets/shaders/vs_color.glsl?raw';
-import fsGLSL from '../assets/shaders/fs_color.glsl?raw';
+import vsGLSL from "../assets/shaders/vs_color.glsl?raw";
+import fsGLSL from "../assets/shaders/fs_color.glsl?raw";
+import coralObj from "../obj/Coral1.obj?raw";
 
 const scene = new Scene3D();
 
@@ -42,7 +42,6 @@ const settings = {
 };
 */
 
-
 // Global variables
 let colorProgramInfo = undefined;
 let gl = undefined;
@@ -50,12 +49,11 @@ const duration = 1000; // ms
 let elapsed = 0;
 let then = 0;
 
-
 // Main function is async to be able to make the requests
 async function main() {
   // Setup the canvas area
-  const canvas = document.querySelector('canvas');
-  gl = canvas.getContext('webgl2');
+  const canvas = document.querySelector("canvas");
+  gl = canvas.getContext("webgl2");
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -73,7 +71,7 @@ async function main() {
   await getDestinations();
 
   // Initialize the scene
-  setupScene(); 
+  setupScene();
 
   /* Primero se inicia el modelo, se obtienen las caracteríticas de cada modelo, 
    y con esa información se dibuja la escena */
@@ -88,14 +86,15 @@ async function main() {
   drawScene();
 }
 
-
 function setupScene() {
-  let camera = new Camera3D(0,
-    25,             // Distance to target
-    4,              // Azimut
-    1,              // Elevation
-    [0, 0, 20],   // Posición que cubra ambos grupos
-    [5, 0, 5]);
+  let camera = new Camera3D(
+    0,
+    25, // Distance to target
+    4, // Azimut
+    1, // Elevation
+    [0, 0, 20], // Posición que cubra ambos grupos
+    [5, 0, 5]
+  );
   // These values are empyrical.
   // Maybe find a better way to determine them
   camera.panOffset = [0, 10, 2];
@@ -108,6 +107,9 @@ function setupObjects(scene, gl, programInfo) {
   const baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo);
 
+  const coralModel = new Object3D(-2);
+  coralModel.prepareVAO(gl, programInfo, coralObj);
+
   /*
   // A scaled cube to use as the ground
   const ground = new Object3D(-3, [14, 0, 14]);
@@ -119,56 +121,55 @@ function setupObjects(scene, gl, programInfo) {
   scene.addObject(ground);
   */
 
-  
   // Copy the properties of the cars
   for (const car of cars) {
-     car.arrays = baseCube.arrays;
-     car.bufferInfo = baseCube.bufferInfo;
-     car.vao = baseCube.vao;
-     car.scale = { x: 0.5, y: 0.5, z: 0.5 };
-     car.color = [1, 0, 0, 1.0]; // ROJO
-     scene.addObject(car);
+    car.arrays = baseCube.arrays;
+    car.bufferInfo = baseCube.bufferInfo;
+    car.vao = baseCube.vao;
+    car.scale = { x: 0.5, y: 0.5, z: 0.5 };
+    car.color = [1, 0, 0, 1.0]; // ROJO
+    scene.addObject(car);
   }
-  
+
   // Copy the properties of the obstacles
-    for (const obstacle of obstacles) {
-     obstacle.arrays = baseCube.arrays;
-     obstacle.bufferInfo = baseCube.bufferInfo;
-     obstacle.vao = baseCube.vao;
-     obstacle.scale = { x: 0.5, y: 1.5, z: 0.5 };
-     obstacle.color = [0.5, 0.5, 0.5, 1.0]; // GRIS
-     scene.addObject(obstacle);
-   }
-  
+  for (const obstacle of obstacles) {
+    obstacle.arrays = coralModel.arrays;
+    obstacle.bufferInfo = coralModel.bufferInfo;
+    obstacle.vao = coralModel.vao;
+    obstacle.scale = { x: 0.5, y: 1.5, z: 0.5 };
+    obstacle.color = [0.5, 0.5, 0.5, 1.0]; // GRIS
+    scene.addObject(obstacle);
+  }
+
   // Copy the properties of the roads
-    for (const road of roads) {
-     road.arrays = baseCube.arrays;
-     road.bufferInfo = baseCube.bufferInfo;
-     road.vao = baseCube.vao;
-     road.scale = { x: 0.5, y: 0.1, z: 0.5 };
-     road.color = [0.2, 0.4, 0.8, 1.0]; // AZUL
-     scene.addObject(road);
-    }
-  
+  for (const road of roads) {
+    road.arrays = baseCube.arrays;
+    road.bufferInfo = baseCube.bufferInfo;
+    road.vao = baseCube.vao;
+    road.scale = { x: 0.5, y: 0.1, z: 0.5 };
+    road.color = [0.2, 0.4, 0.8, 1.0]; // AZUL
+    scene.addObject(road);
+  }
+
   // Copy the properties of the traffic lights
   for (const tl of traffic_lights) {
-     tl.arrays = baseCube.arrays;
-     tl.bufferInfo = baseCube.bufferInfo;
-     tl.vao = baseCube.vao;
-     tl.scale = { x: 0.5, y: 1, z: 0.5 };
-     tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
-     scene.addObject(tl);
-    }
+    tl.arrays = baseCube.arrays;
+    tl.bufferInfo = baseCube.bufferInfo;
+    tl.vao = baseCube.vao;
+    tl.scale = { x: 0.5, y: 1, z: 0.5 };
+    tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
+    scene.addObject(tl);
+  }
 
   // Copy the properties of the destinations
   for (const des of destinations) {
-     des.arrays = baseCube.arrays;
-     des.bufferInfo = baseCube.bufferInfo;
-     des.vao = baseCube.vao;
-     des.scale = { x: 0.5, y: 0.1, z: 0.5 };
-     des.color = [0, 1, 0, 1.0]; // VERDE
-     scene.addObject(des);
-    }
+    des.arrays = baseCube.arrays;
+    des.bufferInfo = baseCube.bufferInfo;
+    des.vao = baseCube.vao;
+    des.scale = { x: 0.5, y: 0.1, z: 0.5 };
+    des.color = [0, 1, 0, 1.0]; // VERDE
+    scene.addObject(des);
+  }
 }
 
 // Draw an object with its corresponding transformations
@@ -211,7 +212,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   // Model uniforms
   let objectUniforms = {
     u_transforms: wvpMat,
-    u_color: object.color  // ✅ Pasar el color como uniform
+    u_color: object.color, // ✅ Pasar el color como uniform
   };
   twgl.setUniforms(programInfo, objectUniforms);
 
@@ -257,7 +258,7 @@ async function drawScene() {
 
 function setupViewProjection(gl) {
   // Field of view of 60 degrees vertically, in radians
-  const fov = 60 * Math.PI / 180;
+  const fov = (60 * Math.PI) / 180;
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
   // Matrices for the world view
