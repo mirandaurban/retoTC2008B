@@ -1,2 +1,15 @@
 /venv
 /vizualizationServer/node_modules
+
+.DS_Store
+__pycache__
+*.pyc
+
+.vscode/
+node_modules/
+*.lock.yaml
+
+.env/
+agents_requirements.txt
+.agents/
+venv/
