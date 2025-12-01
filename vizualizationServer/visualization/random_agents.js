@@ -31,6 +31,13 @@ import coralObj2 from "../obj/Coral2.obj?raw";
 import coralObj3 from "../obj/Coral3.obj?raw";
 import coralObj4 from "../obj/Coral4.obj?raw";
 import bigFanShellObj from "../obj/BigFanShell.obj?raw";
+import starfishObj from "../obj/starfish.obj?raw";
+
+
+import vsTexture from "../assets/shaders/vs_color_texture.glsl?raw";
+import fsTexture from "../assets/shaders/fs_color_texture.glsl?raw";
+
+import starfishTextureUrl from "../textures/starfish.png";
 
 const scene = new Scene3D();
 
@@ -48,6 +55,8 @@ const settings = {
 
 // Global variables
 let colorProgramInfo = undefined;
+let textureProgramInfo = undefined;
+let starfishTexture = undefined;
 let gl = undefined;
 const duration = 1000; // ms
 let elapsed = 0;
@@ -63,6 +72,9 @@ async function main() {
 
   // Prepare the program with the shaders
   colorProgramInfo = twgl.createProgramInfo(gl, [vsGLSL, fsGLSL]);
+  textureProgramInfo = twgl.createProgramInfo(gl, [vsTexture, fsTexture]);
+
+  starfishTexture = twgl.createTexture(gl, { src: starfishTextureUrl, flipY: 1 });
 
   // Initialize the agents model
   await initAgentsModel();
@@ -81,7 +93,7 @@ async function main() {
    y con esa información se dibuja la escena */
 
   // Position the objects in the scene
-  setupObjects(scene, gl, colorProgramInfo);
+  setupObjects(scene, gl, colorProgramInfo, textureProgramInfo);
 
   // Prepare the user interface
   setupUI();
@@ -106,7 +118,7 @@ function setupScene() {
   scene.camera.setupControls();
 }
 
-function setupObjects(scene, gl, programInfo) {
+function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   // Create VAOs for the different shapes
   const baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo);
@@ -122,8 +134,12 @@ function setupObjects(scene, gl, programInfo) {
 
   const coralModels = [coralModel1, coralModel2, coralModel3, coralModel4];
 
-  const bigFanShellModel = new Object3D(-6, [0,0,0], [0,0,0], [1.0, 2.0, 1.0]);
+  const bigFanShellModel = new Object3D(-6, [0,0,0], [0,0,0], [3.0, 4.0, 3.0]);
   bigFanShellModel.prepareVAO(gl, programInfo, bigFanShellObj);
+
+  const starfishModel = new Object3D(-7, [0,0,0], [0,0,0], [0.2, 0.2, 0.2]);
+  starfishModel.prepareVAO(gl, textureProgramInfo, starfishObj);
+  starfishModel.texture = starfishTexture;
 
   /*
   // A scaled cube to use as the ground
@@ -185,11 +201,12 @@ function setupObjects(scene, gl, programInfo) {
 
   // Copy the properties of the destinations
   for (const des of destinations) {
-    des.arrays = baseCube.arrays;
-    des.bufferInfo = baseCube.bufferInfo;
-    des.vao = baseCube.vao;
-    des.scale = { x: 0.5, y: 0.1, z: 0.5 };
-    des.color = [0, 1, 0, 1.0]; // VERDE
+    des.arrays = starfishModel.arrays;
+    des.bufferInfo = starfishModel.bufferInfo;
+    des.vao = starfishModel.vao;
+    des.texture = starfishModel.texture;
+    des.scale = { ...starfishModel.scale };
+    des.color = [0, 1, 0, 1.0]; // VERDE (ignored if textured)
     scene.addObject(des);
   }
 }
@@ -236,6 +253,9 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_transforms: wvpMat,
     u_color: object.color, // ✅ Pasar el color como uniform
   };
+  if (object.texture) {
+    objectUniforms.u_texture = object.texture;
+  }
   twgl.setUniforms(programInfo, objectUniforms);
 
   gl.bindVertexArray(object.vao);
@@ -264,9 +284,10 @@ async function drawScene() {
   const viewProjectionMatrix = setupViewProjection(gl);
 
   // Draw the objects
-  gl.useProgram(colorProgramInfo.program);
   for (let object of scene.objects) {
-    drawObject(gl, colorProgramInfo, object, viewProjectionMatrix, fract);
+    let programInfo = object.texture ? textureProgramInfo : colorProgramInfo;
+    gl.useProgram(programInfo.program);
+    drawObject(gl, programInfo, object, viewProjectionMatrix, fract);
   }
 
   // Update the scene after the elapsed duration
