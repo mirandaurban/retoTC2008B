@@ -12,7 +12,7 @@ from traffic_base.agent import Car, Traffic_Light, Destination, Obstacle, Road
 number_agents = 10
 width = 28
 height = 28
-randomModel = None
+cityModel = None
 currentStep = 0
 
 ########################################################################
@@ -22,14 +22,19 @@ currentStep = 0
 # This application will be used to interact with WebGL
 # Flask es una librería que permite hacer un servidor 
 app = Flask("Traffic example")
-cors = CORS(app, origins=['http://localhost'])
+cors = CORS(app, 
+    origins=['http://localhost:', 'http://127.0.0.1:'],
+    methods=['GET', 'POST', 'OPTIONS'],
+    allow_headers=['Content-Type'],
+    supports_credentials=True
+)
 
 # This route will be used to send the parameters of the simulation to the server.
 # The servers expects a POST request with the parameters in a.json.
 @app.route('/init', methods=['GET', 'POST'])
 @cross_origin()
 def initModel():
-    global currentStep, randomModel, number_agents, width, height
+    global currentStep, cityModel, number_agents, width, height
 
     if request.method == 'POST':
         try:
@@ -45,7 +50,7 @@ def initModel():
     print(f"Model parameters:{number_agents, width, height}")
 
     # Create the model using the parameters sent by the application
-    randomModel = CityModel(number_agents)
+    cityModel = CityModel(number_agents)
 
     # Return a message to saying that the model was created successfully
     return jsonify({"message": f"Parameters recieved, model initiated.\nSize: {width}x{height}"})
@@ -59,14 +64,14 @@ def initModel():
 @app.route('/getCars', methods=['GET'])
 @cross_origin()
 def getCars():
-    global randomModel
+    global cityModel
 
     if request.method == 'GET':
         # Get the positions of the agents and return them to WebGL in JSON.json.t.
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
         try:
-            carCells = randomModel.grid.all_cells.select(
+            carCells = cityModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Car) for obj in cell.agents)
             ).cells
             # print(f"CELLS: {agentCells}")
@@ -94,14 +99,14 @@ def getCars():
 @app.route('/getObstacles', methods=['GET'])
 @cross_origin()
 def getObstacles():
-    global randomModel
+    global cityModel
 
     if request.method == 'GET':
         # Get the positions of the agents and return them to WebGL in JSON.json.t.
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
         try:
-            obstacleCells = randomModel.grid.all_cells.select(
+            obstacleCells = cityModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Obstacle) for obj in cell.agents)
             ).cells
             # print(f"CELLS: {obstacleCells}")
@@ -129,14 +134,14 @@ def getObstacles():
 @app.route('/getRoad', methods=['GET'])
 @cross_origin()
 def getRoad():
-    global randomModel
+    global cityModel
 
     if request.method == 'GET':
         try:
             # Get the positions of the road and return them to WebGL in JSON.json.t.
             # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a car.
 
-            roadCells = randomModel.grid.all_cells.select(
+            roadCells = cityModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Road) for obj in cell.agents)
             )
             #print(f"CELLS: {roadCells}")
@@ -164,14 +169,14 @@ def getRoad():
 @app.route('/getTrafficLights', methods=['GET'])
 @cross_origin()
 def getTrafficLights():
-    global randomModel
+    global cityModel
 
     if request.method == 'GET':
         try:
             # Get the positions of the traffic lights and return them to WebGL in JSON.json.t.
             # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a traffic lights.
 
-            trafficLightsCells = randomModel.grid.all_cells.select(
+            trafficLightsCells = cityModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Traffic_Light) for obj in cell.agents)
             )
             # print(f"CELLS: {trafficLightsCells}")
@@ -199,14 +204,14 @@ def getTrafficLights():
 @app.route('/getDestinations', methods=['GET'])
 @cross_origin()
 def getDestinations():
-    global randomModel
+    global cityModel
 
     if request.method == 'GET':
         try:
             # Get the positions of the road and return them to WebGL in JSON.json.t.
             # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a car.
 
-            destinationCells = randomModel.grid.all_cells.select(
+            destinationCells = cityModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Destination) for obj in cell.agents)
             )
             #print(f"CELLS: {roadCells}")
@@ -236,11 +241,11 @@ def getDestinations():
 @app.route('/update', methods=['GET'])
 @cross_origin()
 def updateModel():
-    global currentStep, randomModel
+    global currentStep, cityModel
     if request.method == 'GET':
         try:
         # Update the model and return a message to WebGL saying that the model was updated successfully
-            randomModel.step()
+            cityModel.step()
             currentStep += 1
             return jsonify({'message': f'Model updated to step {currentStep}.', 'currentStep':currentStep})
         except Exception as e:

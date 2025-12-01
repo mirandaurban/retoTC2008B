@@ -26,7 +26,11 @@ import {
 // Define the shader code, using GLSL 3.00
 import vsGLSL from "../assets/shaders/vs_color.glsl?raw";
 import fsGLSL from "../assets/shaders/fs_color.glsl?raw";
-import coralObj from "../obj/Coral1.obj?raw";
+import coralObj1 from "../obj/Coral1.obj?raw";
+import coralObj2 from "../obj/Coral2.obj?raw";
+import coralObj3 from "../obj/Coral3.obj?raw";
+import coralObj4 from "../obj/Coral4.obj?raw";
+import bigFanShellObj from "../obj/BigFanShell.obj?raw";
 
 const scene = new Scene3D();
 
@@ -107,8 +111,19 @@ function setupObjects(scene, gl, programInfo) {
   const baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo);
 
-  const coralModel = new Object3D(-2);
-  coralModel.prepareVAO(gl, programInfo, coralObj);
+  const coralModel1 = new Object3D(-2);
+  coralModel1.prepareVAO(gl, programInfo, coralObj1);
+  const coralModel2 = new Object3D(-3);
+  coralModel2.prepareVAO(gl, programInfo, coralObj2);
+  const coralModel3 = new Object3D(-4);
+  coralModel3.prepareVAO(gl, programInfo, coralObj3);
+  const coralModel4 = new Object3D(-5);
+  coralModel4.prepareVAO(gl, programInfo, coralObj4);
+
+  const coralModels = [coralModel1, coralModel2, coralModel3, coralModel4];
+
+  const bigFanShellModel = new Object3D(-6);
+  bigFanShellModel.prepareVAO(gl, programInfo, bigFanShellObj);
 
   /*
   // A scaled cube to use as the ground
@@ -133,9 +148,10 @@ function setupObjects(scene, gl, programInfo) {
 
   // Copy the properties of the obstacles
   for (const obstacle of obstacles) {
-    obstacle.arrays = coralModel.arrays;
-    obstacle.bufferInfo = coralModel.bufferInfo;
-    obstacle.vao = coralModel.vao;
+    const randomCoral = coralModels[Math.floor(Math.random() * coralModels.length)];
+    obstacle.arrays = randomCoral.arrays;
+    obstacle.bufferInfo = randomCoral.bufferInfo;
+    obstacle.vao = randomCoral.vao;
     obstacle.scale = { x: 0.5, y: 1.5, z: 0.5 };
     obstacle.color = [0.5, 0.5, 0.5, 1.0]; // GRIS
     scene.addObject(obstacle);
@@ -153,9 +169,9 @@ function setupObjects(scene, gl, programInfo) {
 
   // Copy the properties of the traffic lights
   for (const tl of traffic_lights) {
-    tl.arrays = baseCube.arrays;
-    tl.bufferInfo = baseCube.bufferInfo;
-    tl.vao = baseCube.vao;
+    tl.arrays = bigFanShellModel.arrays;
+    tl.bufferInfo = bigFanShellModel.bufferInfo;
+    tl.vao = bigFanShellModel.vao;
     tl.scale = { x: 0.5, y: 1, z: 0.5 };
     tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
     scene.addObject(tl);

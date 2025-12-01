@@ -1,7 +1,11 @@
 from traffic_base.agent import *
 from traffic_base.model import CityModel
 
-from mesa.visualization import Slider, SolaraViz, make_space_component
+from mesa.visualization import (
+    Slider, 
+    SolaraViz, 
+    make_space_component, 
+    SpaceRenderer)
 from mesa.visualization.components import AgentPortrayalStyle
 
 
@@ -44,20 +48,22 @@ model_params = {
 
 model = CityModel(model_params["N"])
 
-# space_component = make_space_component(
-#     agent_portrayal, draw_grid=False, post_process=post_process
-# )
+renderer = SpaceRenderer(
+    model,
+    backend="matplotlib",
+)
+renderer.draw_agents(agent_portrayal)
 
-# page = SolaraViz(
-#     model,
-#     components=[space_component],
-#     model_params=model_params,
-#     name="Random Model",
-# )
+page = SolaraViz(
+    model,
+    renderer,
+    model_params=model_params,
+    name="City Model",
+)
 
-grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
+# grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
-server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
+# server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
                        
-server.port = 8522 # The default
-server.launch()
+# server.port = 8522 # The default
+# server.launch()
