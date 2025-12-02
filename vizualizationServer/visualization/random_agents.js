@@ -32,6 +32,7 @@ import coralObj3 from "../obj/Coral3.obj?raw";
 import coralObj4 from "../obj/Coral4.obj?raw";
 import bigFanShellObj from "../obj/BigFanShell.obj?raw";
 import starfishObj from "../obj/starfish.obj?raw";
+import pezObj from "../obj/pez1.obj?raw";
 
 
 import vsTexture from "../assets/shaders/vs_color_texture.glsl?raw";
@@ -125,7 +126,9 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   baseCube.prepareVAO(gl, programInfo);
 
   // Store the car model for later use
-  carModel = baseCube;
+  const pezModel = new Object3D(-8, [0,0,0], [0,0,0], [0.5, 0.5, 0.5]);
+  pezModel.prepareVAO(gl, programInfo, pezObj);
+  carModel = pezModel;
 
   const coralModel1 = new Object3D(-2, [0,0,0], [0,0,0], [1.0, 3.0, 1.0]);
   coralModel1.prepareVAO(gl, programInfo, coralObj1);
@@ -158,11 +161,11 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
 
   // Copy the properties of the cars
   for (const car of cars) {
-    car.arrays = baseCube.arrays;
-    car.bufferInfo = baseCube.bufferInfo;
-    car.vao = baseCube.vao;
-    car.scale = { x: 0.5, y: 0.5, z: 0.5 };
-    car.color = [1, 0, 0, 1.0]; // ROJO
+    car.arrays = carModel.arrays;
+    car.bufferInfo = carModel.bufferInfo;
+    car.vao = carModel.vao;
+    car.scale = { ...carModel.scale };
+    car.color = [Math.random(), Math.random(), Math.random(), 1.0];
     scene.addObject(car);
   }
 
@@ -311,8 +314,8 @@ function syncSceneObjects() {
       car.arrays = carModel.arrays;
       car.bufferInfo = carModel.bufferInfo;
       car.vao = carModel.vao;
-      car.scale = { x: 0.5, y: 0.5, z: 0.5 };
-      car.color = [1, 0, 0, 1.0]; // ROJO
+      car.scale = { ...carModel.scale };
+      car.color = [Math.random(), Math.random(), Math.random(), 1.0];
       scene.addObject(car);
     }
   }
