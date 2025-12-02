@@ -33,12 +33,11 @@ import coralObj4 from "../obj/Coral4.obj?raw";
 import bigFanShellObj from "../obj/BigFanShell.obj?raw";
 import starfishObj from "../obj/starfish.obj?raw";
 import pezObj from "../obj/pez1.obj?raw";
-
-
 import vsTexture from "../assets/shaders/vs_color_texture.glsl?raw";
 import fsTexture from "../assets/shaders/fs_color_texture.glsl?raw";
-
+import { cubeTextured } from '../libs/shapes';
 import starfishTextureUrl from "../textures/starfish.png";
+import sandRoadTextureUrl from "../textures/sand.png";
 
 const scene = new Scene3D();
 
@@ -58,9 +57,10 @@ const settings = {
 let colorProgramInfo = undefined;
 let textureProgramInfo = undefined;
 let starfishTexture = undefined;
+let sandRoadTexture = undefined;
 let carModel = undefined;
 let gl = undefined;
-const duration = 1000; // ms
+const duration = 1000; // ms // Speed de la simulación
 let elapsed = 0;
 let then = 0;
 
@@ -77,6 +77,7 @@ async function main() {
   textureProgramInfo = twgl.createProgramInfo(gl, [vsTexture, fsTexture]);
 
   starfishTexture = twgl.createTexture(gl, { src: starfishTextureUrl, flipY: 1 });
+  sandRoadTexture = twgl.createTexture(gl, { src: sandRoadTextureUrl, flipY: 1 });
 
   // Initialize the agents model
   await initAgentsModel();
@@ -148,6 +149,10 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   starfishModel.prepareVAO(gl, textureProgramInfo, starfishObj);
   starfishModel.texture = starfishTexture;
 
+  const textureCubeArrays = cubeTextured(0.5);
+  const textureCubeBufferInfo = twgl.createBufferInfoFromArrays(gl, textureCubeArrays);
+  const textureCubeVAO = twgl.createVAOFromBufferInfo(gl, textureProgramInfo, textureCubeBufferInfo)
+
   /*
   // A scaled cube to use as the ground
   const ground = new Object3D(-3, [14, 0, 14]);
@@ -186,15 +191,16 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
     scene.addObject(obstacle);
   }
 
-  // Copy the properties of the roads
+  // Copy the properties of the road cells
   for (const road of roads) {
-    road.arrays = baseCube.arrays;
-    road.bufferInfo = baseCube.bufferInfo;
-    road.vao = baseCube.vao;
-    road.scale = { x: 0.5, y: 0.1, z: 0.5 };
-    road.color = [0.2, 0.4, 0.8, 1.0]; // AZUL
-    scene.addObject(road);
-  }
+      road.arrays = textureCubeArrays;
+      road.bufferInfo = textureCubeBufferInfo;
+      road.vao = textureCubeVAO;
+      road.texture = sandRoadTexture;        
+      road.scale = { x: 2.0, y: 0.05, z: 2.0 };
+      road.color = [1, 1, 1, 1];
+      scene.addObject(road);
+    }
 
   // Copy the properties of the traffic lights
   for (const tl of traffic_lights) {
