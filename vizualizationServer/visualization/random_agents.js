@@ -57,6 +57,7 @@ const settings = {
 let colorProgramInfo = undefined;
 let textureProgramInfo = undefined;
 let starfishTexture = undefined;
+let carModel = undefined;
 let gl = undefined;
 const duration = 1000; // ms
 let elapsed = 0;
@@ -122,6 +123,9 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   // Create VAOs for the different shapes
   const baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo);
+
+  // Store the car model for later use
+  carModel = baseCube;
 
   const coralModel1 = new Object3D(-2, [0,0,0], [0,0,0], [1.0, 3.0, 1.0]);
   coralModel1.prepareVAO(gl, programInfo, coralObj1);
@@ -294,9 +298,24 @@ async function drawScene() {
   if (elapsed >= duration) {
     elapsed = 0;
     await update();
+    syncSceneObjects();
   }
 
   requestAnimationFrame(drawScene);
+}
+
+function syncSceneObjects() {
+  // Add new cars to the scene
+  for (const car of cars) {
+    if (car.vao == undefined && carModel != undefined) {
+      car.arrays = carModel.arrays;
+      car.bufferInfo = carModel.bufferInfo;
+      car.vao = carModel.vao;
+      car.scale = { x: 0.5, y: 0.5, z: 0.5 };
+      car.color = [1, 0, 0, 1.0]; // ROJO
+      scene.addObject(car);
+    }
+  }
 }
 
 function setupViewProjection(gl) {

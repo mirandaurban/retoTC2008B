@@ -102,6 +102,11 @@ async function getCars() {
                         // Update the agent's position
                         current_car.oldPosArray = current_car.posArray;
                         current_car.position = {x: car.x, y: car.y, z: car.z};
+                    } else {
+                        // Create new car if it doesn't exist
+                        const newCar = new Object3D(car.id, [car.x, car.y, car.z]);
+                        newCar['oldPosArray'] = newCar.posArray;
+                        cars.push(newCar);
                     }
 
                     //console.log("OLD: ", current_agent.oldPosArray,
