@@ -9,7 +9,7 @@ from traffic_base.agent import Car, Traffic_Light, Destination, Obstacle, Road
 
 # Size of the board:
 # Declarar variables globales cin características del agente y dónde se guarda el modelo
-number_agents = 10
+number_agents = 300
 width = 28
 height = 28
 cityModel = None
