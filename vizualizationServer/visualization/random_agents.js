@@ -211,6 +211,10 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
     des.texture = starfishModel.texture;
     des.scale = { ...starfishModel.scale };
     des.color = [0, 1, 0, 1.0]; // VERDE (ignored if textured)
+
+    des.rotDeg.x = 270;
+    des.rotRad.x = des.rotDeg.x * Math.PI / 180;
+
     scene.addObject(des);
   }
 }
