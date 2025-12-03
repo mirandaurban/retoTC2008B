@@ -154,27 +154,46 @@ async function getObstacles() {
  * Retrieves the current positions of all traffic lights from the agent server.
  * Obtiene la información de los semáforos (id's, posiciones iniciales)
  */
+/*
+ * Retrieves the current positions of all traffic lights from the agent server.
+ * Obtiene la información de los semáforos (id's, posiciones iniciales)
+ */
 async function getTrafficLights() {
     try {
-        // Send a GET request to the agent server to retrieve the traffic lights positions
         let response = await fetch(agent_server_uri + "getTrafficLights");
 
-        // Check if the response was successful
         if (response.ok) {
-            // Parse the response as JSON
             let result = await response.json();
 
-            // Create new traffic lights and add them to the traffic lights array
-            for (const tl of result.positions) {
-                const newTrafficLights = new Object3D(tl.id, [tl.x, tl.y, tl.z]);
-                traffic_lights.push(newTrafficLights);
+            // Si es la primera vez, crea los semáforos
+            if (traffic_lights.length == 0) {
+                for (const tl of result.positions) {
+                    const newTrafficLight = new Object3D(tl.id, [tl.x, tl.y, tl.z]);
+                    newTrafficLight.state = tl.state || 'red';  // 'green' o 'red'
+                    newTrafficLight.direction = tl.direction || null;
+                    traffic_lights.push(newTrafficLight);
+                }
+            } else { 
+                for (const tl of result.positions) {
+                    const current_tl = traffic_lights.find((object3d) => object3d.id == tl.id);
+
+                    if(current_tl != undefined){
+                        current_tl.position = {x: tl.x, y: tl.y, z: tl.z};
+                        // ACTUALIZAR ESTADO
+                        current_tl.state = tl.state || 'red';
+                        current_tl.direction = tl.direction || null;
+                    } else {
+                        // Crear nuevo semáforo si no existe
+                        const newTrafficLight = new Object3D(tl.id, [tl.x, tl.y, tl.z]);
+                        newTrafficLight.state = tl.state || 'red';
+                        newTrafficLight.direction = tl.direction || null;
+                        traffic_lights.push(newTrafficLight);
+                    }
+                }
             }
-            // Log the obstacles array
-            //console.log("Obstacles:", obstacles);
         }
 
     } catch (error) {
-        // Log any errors that occur during the request
         console.log(error);
     }
 }

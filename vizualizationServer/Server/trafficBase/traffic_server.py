@@ -173,13 +173,9 @@ def getTrafficLights():
 
     if request.method == 'GET':
         try:
-            # Get the positions of the traffic lights and return them to WebGL in JSON.json.t.
-            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of a traffic lights.
-
             trafficLightsCells = cityModel.grid.all_cells.select(
                 lambda cell: any(isinstance(obj, Traffic_Light) for obj in cell.agents)
             )
-            # print(f"CELLS: {trafficLightsCells}")
 
             agents = [
                 (cell.coordinate, agent)
@@ -187,18 +183,23 @@ def getTrafficLights():
                 for agent in cell.agents
                 if isinstance(agent, Traffic_Light)
             ]
-            # print(f"AGENTS: {trafficLightsCells}")
 
             trafficLightsPositions = [
-                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                {
+                    "id": str(a.unique_id), 
+                    "x": coordinate[0], 
+                    "y": 1, 
+                    "z": coordinate[1],
+                    "state": "green" if a.state else "red", 
+                    "direction": a.direction  
+                }
                 for (coordinate, a) in agents
             ]
-            # print(f"TRAFFIC LIGHTS POSITIONS: {trafficLightsPositions}")
 
             return jsonify({'positions': trafficLightsPositions})
         except Exception as e:
             print(e)
-            return jsonify({"message": "Error with car positions"}), 500
+            return jsonify({"message": "Error with traffic lights positions"}), 500
 
 # This route will be used to get the positions of the road
 @app.route('/getDestinations', methods=['GET'])

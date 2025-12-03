@@ -60,9 +60,14 @@ let starfishTexture = undefined;
 let sandRoadTexture = undefined;
 let carModel = undefined;
 let gl = undefined;
-const duration = 1000; // ms // Speed de la simulación
+const duration = 100; // ms // Speed de la simulación
 let elapsed = 0;
 let then = 0;
+
+let lightDirection = [0.5, -1.0, 0.5]; // Dirección de la luz (como sol)
+let lightColor = [1.0, 1.0, 1.0];     // Color de la luz (blanco)
+let lightIntensity = 1.2;              // Intensidad de la luz
+
 
 // Main function is async to be able to make the requests
 async function main() {
@@ -153,16 +158,6 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   const textureCubeBufferInfo = twgl.createBufferInfoFromArrays(gl, textureCubeArrays);
   const textureCubeVAO = twgl.createVAOFromBufferInfo(gl, textureProgramInfo, textureCubeBufferInfo)
 
-  /*
-  // A scaled cube to use as the ground
-  const ground = new Object3D(-3, [14, 0, 14]);
-  ground.arrays = baseCube.arrays;
-  ground.bufferInfo = baseCube.bufferInfo;
-  ground.vao = baseCube.vao;
-  ground.scale = {x: 50, y: 0.1, z: 50};
-  ground.color = [0.6, 0.6, 0.6, 1];
-  scene.addObject(ground);
-  */
   const sandFloor = new Object3D(
       -1000,  // ID único para el piso
       [12, 1, 12],  // Posición: debajo de todo
@@ -223,6 +218,8 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   // Copy the properties of the traffic lights
   for (const tl of traffic_lights) {
     tl.arrays = bigFanShellModel.arrays;
+    tl.isTrafficLight = true;
+    tl.state = 'red';
     tl.bufferInfo = bigFanShellModel.bufferInfo;
     tl.vao = bigFanShellModel.vao;
     tl.scale = { ...bigFanShellModel.scale };
@@ -247,29 +244,20 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
 }
 
 // Draw an object with its corresponding transformations
+// Draw an object with its corresponding transformations
 function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
-  // Prepare the vector for translation and scale
+  // Preparar vectores para translación y escala
   let v3_tra = object.posArray;
   let v3_sca = object.scaArray;
 
-  /*
-  // Animate the rotation of the objects
-  object.rotDeg.x = (object.rotDeg.x + settings.rotationSpeed.x * fract) % 360;
-  object.rotDeg.y = (object.rotDeg.y + settings.rotationSpeed.y * fract) % 360;
-  object.rotDeg.z = (object.rotDeg.z + settings.rotationSpeed.z * fract) % 360;
-  object.rotRad.x = object.rotDeg.x * Math.PI / 180;
-  object.rotRad.y = object.rotDeg.y * Math.PI / 180;
-  object.rotRad.z = object.rotDeg.z * Math.PI / 180;
-  */
-
-  // Create the individual transform matrices
+  // Crear matrices de transformación individuales
   const scaMat = M4.scale(v3_sca);
   const rotXMat = M4.rotationX(object.rotRad.x);
   const rotYMat = M4.rotationY(object.rotRad.y);
   const rotZMat = M4.rotationZ(object.rotRad.z);
   const traMat = M4.translation(v3_tra);
 
-  // Create the composite matrix with all transformations
+  // Crear matriz compuesta con todas las transformaciones
   let transforms = M4.identity();
   transforms = M4.multiply(scaMat, transforms);
   transforms = M4.multiply(rotXMat, transforms);
@@ -279,22 +267,52 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
 
   object.matrix = transforms;
 
-  // Apply the projection to the final matrix for the
-  // World-View-Projection
+  // Aplicar la proyección para la matriz World-View-Projection
   const wvpMat = M4.multiply(viewProjectionMatrix, transforms);
 
-  // Model uniforms
+  // Uniforms del modelo
   let objectUniforms = {
     u_transforms: wvpMat,
-    u_color: object.color, // ✅ Pasar el color como uniform
+    u_world: transforms,  
+    u_lightDirection: lightDirection,
+    u_color: object.color,
   };
+  
+  // Agregar luz específica para semáforos
+  if (object.isTrafficLight) {
+    // Usar el estado real del semáforo
+    const trafficLightColor = getTrafficLightColor(object.state);
+    objectUniforms.u_lightColor = trafficLightColor;
+    objectUniforms.u_lightIntensity = 2.0; // Más intenso para semáforos
+    objectUniforms.u_objectColor = object.color;
+  } else {
+    // Luz normal para otros objetos
+    objectUniforms.u_lightColor = lightColor;
+    objectUniforms.u_lightIntensity = lightIntensity;
+    objectUniforms.u_objectColor = [0, 0, 0, 0]; // Sin color específico
+  }
+  
   if (object.texture) {
     objectUniforms.u_texture = object.texture;
   }
+  
   twgl.setUniforms(programInfo, objectUniforms);
 
   gl.bindVertexArray(object.vao);
   twgl.drawBufferInfo(gl, object.bufferInfo);
+}
+
+// Función auxiliar para obtener color del semáforo
+function getTrafficLightColor(state) {
+    if (!state) return [1.0, 1.0, 0.8]; // Color neutro por defecto
+    
+    switch(state.toLowerCase()) {
+        case 'green': 
+            return [0.0, 1.0, 0.0];    // Verde
+        case 'red': 
+        default: 
+            return [1.0, 0.0, 0.0];    // Rojo
+    }
 }
 
 // Function to do the actual display of the objects
@@ -329,6 +347,7 @@ async function drawScene() {
   if (elapsed >= duration) {
     elapsed = 0;
     await update();
+    await getTrafficLights()
     syncSceneObjects();
   }
 

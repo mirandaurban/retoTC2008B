@@ -13,3 +13,6 @@ node_modules/
 agents_requirements.txt
 .agents/
 venv/
+vizualizationServer/Server/trafficBase/traffic_base/__pycache__/__init__.cpython-312.pyc
+vizualizationServer/Server/trafficBase/traffic_base/__pycache__/agent.cpython-312.pyc
+vizualizationServer/Server/trafficBase/traffic_base/__pycache__/model.cpython-312.pyc
