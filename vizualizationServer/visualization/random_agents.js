@@ -60,7 +60,7 @@ let starfishTexture = undefined;
 let sandRoadTexture = undefined;
 let carModel = undefined;
 let gl = undefined;
-const duration = 100; // ms // Speed de la simulación
+const duration = 500; // ms // Speed de la simulación
 let elapsed = 0;
 let then = 0;
 
@@ -344,8 +344,8 @@ async function drawScene() {
   // Update the scene after the elapsed duration
   if (elapsed >= duration) {
     elapsed = 0;
-    await update();
     await getTrafficLights()
+    await update();
     syncSceneObjects();
   }
 
@@ -355,12 +355,50 @@ async function drawScene() {
 function syncSceneObjects() {
   // Add new cars to the scene
   for (const car of cars) {
-    if (car.vao == undefined && carModel != undefined) {
+    const sceneCar = scene.objects.find(obj => obj.id == car.id);
+    
+    if (sceneCar) {
+      // Si ya existe, verificar si se movió
+      if (sceneCar.oldPos) {
+        // Calcular cambio de posición
+        const dx = car.position.x - sceneCar.oldPos.x;
+        const dz = car.position.z - sceneCar.oldPos.z;
+        
+        // Rotar si se movió
+        if (dx !== 0 || dz !== 0) {
+          const angle = Math.atan2(-dx, -dz);  // Calcular ángulo hacia donde se mueve
+          sceneCar.rotDeg.y = angle * (180 / Math.PI);
+          sceneCar.rotRad.y = angle;           
+        }
+      }
+      
+      // Guardar posición actual como vieja para la próxima vez
+      sceneCar.oldPos = {
+        x: car.position.x,
+        y: car.position.y, 
+        z: car.position.z
+      };
+      
+      // Actualizar posición en la escena
+      sceneCar.position.x = car.position.x;
+      sceneCar.position.y = car.position.y;
+      sceneCar.position.z = car.position.z;
+      
+    } else if (car.vao == undefined && carModel != undefined) {
+      // Nuevo pez
       car.arrays = carModel.arrays;
       car.bufferInfo = carModel.bufferInfo;
       car.vao = carModel.vao;
       car.scale = { ...carModel.scale };
       car.color = [Math.random(), Math.random(), Math.random(), 1.0];
+      
+      // Guardar posición inicial
+      car.oldPos = {
+        x: car.position.x,
+        y: car.position.y,
+        z: car.position.z
+      };
+      
       scene.addObject(car);
     }
   }

@@ -269,7 +269,7 @@ async function update() {
         if (response.ok) {
             // Retrieve the updated agent positions
             await getCars();
-            //await getTrafficLights();
+            await getTrafficLights();
             // Log a message indicating that the agents have been updated
             //console.log("Updated agents");
         }
