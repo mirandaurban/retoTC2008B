@@ -160,9 +160,9 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
 
   const sandFloor = new Object3D(
       -1000,  // ID único para el piso
-      [12, 1, 12],  // Posición: debajo de todo
+      [12, 0.9, 12],  // Posición: debajo de todo
       [0, 0, 0],   // Sin rotación
-      [28, 0, 28],  // Escala
+      [28, 0.1, 28],  // Escala
       [1, 1, 1, 1]  // Color blanco
   );
   
@@ -171,9 +171,7 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   sandFloor.bufferInfo = textureCubeBufferInfo;
   sandFloor.vao = textureCubeVAO;
   sandFloor.texture = sandRoadTexture;
-  
-  // Ajusta la escala de textura para que se repita
-  sandFloor.texScale = 10; // Para repetir la textura 10 veces
+  sandFloor.texScale = 10;
   
   scene.addObject(sandFloor);
 
