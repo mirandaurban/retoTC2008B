@@ -41,17 +41,16 @@ import sandRoadTextureUrl from "../textures/sand.png";
 
 const scene = new Scene3D();
 
-/*
-// Variable for the scene settings
+
+// Variable for slider settings
 const settings = {
-    // Speed in degrees
-    rotationSpeed: {
-        x: 0,
-        y: 0,
-        z: 0,
-    },
+    // Simulation parameters
+    simulationParameters: {
+      spawn_time: 10,
+      cars: 4,
+    }
 };
-*/
+
 
 // Global variables
 let colorProgramInfo = undefined;
@@ -84,6 +83,9 @@ async function main() {
   starfishTexture = twgl.createTexture(gl, { src: starfishTextureUrl, flipY: 1 });
   sandRoadTexture = twgl.createTexture(gl, { src: sandRoadTextureUrl, flipY: 1 });
 
+  // Prepare the user interface
+  setupUI();
+
   // Initialize the agents model
   await initAgentsModel();
 
@@ -102,9 +104,6 @@ async function main() {
 
   // Position the objects in the scene
   setupObjects(scene, gl, colorProgramInfo, textureProgramInfo);
-
-  // Prepare the user interface
-  setupUI();
 
   // Fisrt call to the drawing loop
   drawScene();
@@ -142,10 +141,10 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   coralModel2.prepareVAO(gl, programInfo, coralObj2);
   const coralModel3 = new Object3D(-4, [0,0,0], [0,0,0], [1.0, 3.0, 1.0]);
   coralModel3.prepareVAO(gl, programInfo, coralObj3);
-  const coralModel4 = new Object3D(-5, [0,0,0], [0,0,0], [0.5, 1.5, 0.5]);
-  coralModel4.prepareVAO(gl, programInfo, coralObj4);
+  // const coralModel4 = new Object3D(-5, [0,0,0], [0,0,0], [0.5, 1.5, 0.5]);
+  // coralModel4.prepareVAO(gl, programInfo, coralObj4);
 
-  const coralModels = [coralModel1, coralModel2, coralModel3, coralModel4];
+  const coralModels = [coralModel1, coralModel2, coralModel3,];
 
   const bigFanShellModel = new Object3D(-6, [0,0,0], [0,0,0], [3.0, 4.0, 3.0]);
   bigFanShellModel.prepareVAO(gl, programInfo, bigFanShellObj);
@@ -247,6 +246,8 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   // Preparar vectores para translación y escala
   let v3_tra = object.posArray;
   let v3_sca = object.scaArray;
+  // Aquí se hace el calculo de animación
+  // Se usa fract (tiempo transcurrido entre 0 y 1)
 
   // Crear matrices de transformación individuales
   const scaMat = M4.scale(v3_sca);
@@ -425,18 +426,66 @@ function setupViewProjection(gl) {
 
 // Setup a ui.
 function setupUI() {
-  /*
+  
   const gui = new GUI();
 
   // Settings for the animation
-  const animFolder = gui.addFolder('Animation:');
-  animFolder.add( settings.rotationSpeed, 'x', 0, 360)
-      .decimals(2)
-  animFolder.add( settings.rotationSpeed, 'y', 0, 360)
-      .decimals(2)
-  animFolder.add( settings.rotationSpeed, 'z', 0, 360)
-      .decimals(2)
-  */
+  const simulationFolder = gui.addFolder('Simulation:');
+  simulationFolder.add( settings.simulationParameters, 'spawn_time', 1, 20)
+      .decimals(0)
+      .name('Spawn time')
+      .onChange(async (value) => {
+          // Actualizar la variable global en api_connection.js
+          if (window.apiSettings) {
+              window.apiSettings.spawn_time = value;
+          }
+          // Reinicializar el modelo con el nuevo número de agentes
+          await reinitializeModel();
+      });
+  simulationFolder.add( settings.simulationParameters, 'cars', 0, 300)
+      .decimals(0)
+      .name('Number of agents')
+      .onChange(async (value) => {
+          // Actualizar la variable global en api_connection.js
+          if (window.apiSettings) {
+              window.apiSettings.number_agents = value;
+          }
+          // Reinicializar el modelo con el nuevo número de agentes
+          await reinitializeModel();
+      });
+}
+
+async function reinitializeModel() {
+  console.log(`Reinitializing model with ${settings.simulationParameters.cars} agents`);
+  
+  try {
+    // Limpiar TODOS los arrays globales importados
+    cars.length = 0;
+    obstacles.length = 0;
+    traffic_lights.length = 0;
+    roads.length = 0;
+    destinations.length = 0;
+    
+    // Limpiar la escena actual
+    scene.objects = [];
+    
+    // Reinicializar el modelo
+    await initAgentsModel();
+    
+    // Obtener los nuevos datos
+    await getObstacles();
+    await getCars();
+    await getRoad();
+    await getTrafficLights();
+    await getDestinations();
+    
+    // Reconfigurar objetos
+    setupObjects(scene, gl, colorProgramInfo, textureProgramInfo);
+    
+    console.log(`Model reinitialized. Cars: ${cars.length}, Obstacles: ${obstacles.length}`);
+  } catch (error) {
+    console.error("Error reinitializing model:", error);
+  }
 }
 
 main();

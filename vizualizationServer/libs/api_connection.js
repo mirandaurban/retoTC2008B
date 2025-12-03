@@ -25,9 +25,18 @@ const destinations = [];
 /// Datos iniciales para la simulación
 const initData = {
     NAgents: 20,
-    width: 28,
-    height: 28
 };
+
+// En api_connection.js
+const apiSettings = {
+    number_agents: 300,
+    spawn_time: 10
+};
+
+// Hacerlo disponible globalmente
+if (typeof window !== 'undefined') {
+    window.apiSettings = apiSettings;
+}
 
 
 /* FUNCTIONS FOR THE INTERACTION WITH THE MESA SERVER */
@@ -37,24 +46,25 @@ const initData = {
  * Envía un diccionario para que se inicialize en el servidor
  */
 async function initAgentsModel() {
+    const url = "http://localhost:8585/init";
+    
     try {
-        // Send a POST request to the agent server to initialize the model
-        let response = await fetch(agent_server_uri + "init", {
+        const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type':'application/json' },
-            body: JSON.stringify(initData)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                NAgents: apiSettings.number_agents,
+                STime: apiSettings.spawn_time
+            })
         });
-
-        // Check if the response was successful
-        if (response.ok) {
-            // Parse the response as JSON and log the message
-            let result = await response.json();
-            console.log(result.message);
-        }
-
+        
+        const data = await response.json();
+        console.log(data.message);
+        return data;
     } catch (error) {
-        // Log any errors that occur during the request
-        console.log(error);
+        console.error("Error initializing agents model:", error);
     }
 }
 
