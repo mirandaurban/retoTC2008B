@@ -10,16 +10,28 @@ class CityModel(Model):
     Creates a model based on a city map with directional roads.
     """
     
-    def __init__(self, N, seed=42):
+    def __init__(self, N=3000, spawn_time=10, seed=42):
         super().__init__(seed=seed)
         
         # Load the map dictionary
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
         
-        self.num_agents = N
+        # self.num_agents = N
         self.traffic_lights = []
         self.cars_spawned = 0
         self.steps_count = 0
+        
+        if hasattr(N, 'value'):
+            self.num_agents = N.value
+        else:
+            self.num_agents = N
+        
+        # Lo mismo para spawn_time
+        if hasattr(spawn_time, 'value'):
+            self.spawn_time = int(spawn_time.value)
+        else:
+            self.spawn_time = int(spawn_time)
+
         
         # Load the map file
         with open("city_files/new_map.txt") as baseFile:
@@ -406,10 +418,18 @@ class CityModel(Model):
     def step(self):
         """Advance the model by one step."""
         self.steps_count += 1
-        
+
         active_cars = sum(1 for agent in self.agents if isinstance(agent, Car) and agent.state != "In destination")
       
-        if self.steps_count % 10 == 0 and self.cars_spawned < self.num_agents:
+        if self.steps_count % self.spawn_time == 0 and self.cars_spawned < self.num_agents:
             self.spawn_car()
         
         self.agents.shuffle_do("step")
+
+    @staticmethod
+    def average_moves(model):
+        """Get average moves from all the cars"""
+        cars = model.agents.select(lambda x: isinstance(x, Car))
+        if cars:
+            return sum(roomba.moves for roomba in roombas) / len(roombas)
+        return 0

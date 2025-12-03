@@ -30,6 +30,7 @@ class Car(CellAgent):
         self.destination = destination
         self.path = path  # Guardar la ruta
         self.path_index = 0  # Índice actual en la ruta
+        self.moves = 0 # Contador de movimientos
 
     def follow_path(self):
         """
@@ -123,6 +124,7 @@ class Car(CellAgent):
             self.recalculate_route()
         
         elif self.state == "Exploring":
+            self.moves += 1
             self.move()
             
             # Recalcular ruta mientras explora

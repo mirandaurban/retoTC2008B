@@ -38,7 +38,8 @@ def post_process(ax):
 
 
 model_params = {
-    "N": 1000,
+    "N": Slider("Maximum agents", 1000, 10, 5000),
+    "spawn_time": Slider("Spawn Time", 10, 1, 20),
     "seed": {
         "type": "InputText",
         "value": 42,
@@ -46,7 +47,7 @@ model_params = {
     },
 }
 
-model = CityModel(model_params["N"])
+model = CityModel()
 
 renderer = SpaceRenderer(
     model,

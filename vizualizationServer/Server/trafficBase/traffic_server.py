@@ -10,8 +10,6 @@ from traffic_base.agent import Car, Traffic_Light, Destination, Obstacle, Road
 # Size of the board:
 # Declarar variables globales cin características del agente y dónde se guarda el modelo
 number_agents = 300
-width = 28
-height = 28
 cityModel = None
 currentStep = 0
 
@@ -34,26 +32,25 @@ cors = CORS(app,
 @app.route('/init', methods=['GET', 'POST'])
 @cross_origin()
 def initModel():
-    global currentStep, cityModel, number_agents, width, height
+    global currentStep, cityModel, number_agents, spawn_time
 
     if request.method == 'POST':
         try:
             number_agents = int(request.json.get('NAgents'))
-            width = int(request.json.get('width'))
-            height = int(request.json.get('height'))
+            spawn_time = int(request.json.get('STime'))
             currentStep = 0
 
         except Exception as e:
             print(e)
             return jsonify({"message": "Error initializing the model"}), 500
 
-    print(f"Model parameters:{number_agents, width, height}")
+    print(f"Model parameters: Max. num agents: {number_agents} and spawn time: {spawn_time}")
 
     # Create the model using the parameters sent by the application
-    cityModel = CityModel(number_agents)
+    cityModel = CityModel(number_agents, spawn_time)
 
     # Return a message to saying that the model was created successfully
-    return jsonify({"message": f"Parameters recieved, model initiated.\nSize: {width}x{height}"})
+    return jsonify({"message": f"Parameters recieved, model initiated. Maximum umber of agents: {number_agents}"})
 
 
 ####################################
