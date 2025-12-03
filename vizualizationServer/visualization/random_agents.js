@@ -40,7 +40,7 @@ import fsSkybox from "../assets/shaders/fs_skybox.glsl?raw";
 import { cubeTextured, skyboxCube } from '../libs/shapes';
 import starfishTextureUrl from "../textures/starfish.png";
 import sandRoadTextureUrl from "../textures/sand.png";
-import skyboxTextureUrl from "../assets/textures/Skyboxes/Cubemap_Sky_08-512x512.png";
+import skyboxTextureUrl from "../textures/skyrender.png";
 
 const scene = new Scene3D();
 
