@@ -35,9 +35,12 @@ import starfishObj from "../obj/starfish.obj?raw";
 import pezObj from "../obj/pez1.obj?raw";
 import vsTexture from "../assets/shaders/vs_color_texture.glsl?raw";
 import fsTexture from "../assets/shaders/fs_color_texture.glsl?raw";
-import { cubeTextured } from '../libs/shapes';
+import vsSkybox from "../assets/shaders/vs_skybox.glsl?raw";
+import fsSkybox from "../assets/shaders/fs_skybox.glsl?raw";
+import { cubeTextured, skyboxCube } from '../libs/shapes';
 import starfishTextureUrl from "../textures/starfish.png";
 import sandRoadTextureUrl from "../textures/sand.png";
+import skyboxTextureUrl from "../assets/textures/Skyboxes/Cubemap_Sky_08-512x512.png";
 
 const scene = new Scene3D();
 
@@ -56,6 +59,7 @@ const settings = {
 // Global variables
 let colorProgramInfo = undefined;
 let textureProgramInfo = undefined;
+let skyboxProgramInfo = undefined;
 let starfishTexture = undefined;
 let sandRoadTexture = undefined;
 let carModel = undefined;
@@ -80,6 +84,7 @@ async function main() {
   // Prepare the program with the shaders
   colorProgramInfo = twgl.createProgramInfo(gl, [vsGLSL, fsGLSL]);
   textureProgramInfo = twgl.createProgramInfo(gl, [vsTexture, fsTexture]);
+  skyboxProgramInfo = twgl.createProgramInfo(gl, [vsSkybox, fsSkybox]);
 
   starfishTexture = twgl.createTexture(gl, { src: starfishTextureUrl, flipY: 1 });
   sandRoadTexture = twgl.createTexture(gl, { src: sandRoadTextureUrl, flipY: 1 });
@@ -173,6 +178,25 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   sandFloor.texture = sandRoadTexture;
   sandFloor.texScale = 10;
   
+  const skyboxTexture = twgl.createTexture(gl, { src: skyboxTextureUrl, flipY: 1 });
+  
+  const skyboxArrays = skyboxCube(0.5);
+  const skyboxBufferInfo = twgl.createBufferInfoFromArrays(gl, skyboxArrays);
+  const skyboxVAO = twgl.createVAOFromBufferInfo(gl, skyboxProgramInfo, skyboxBufferInfo);
+
+  const skybox = new Object3D(
+      -999, 
+      [0, 0, 0], 
+      [0, 0, 0], 
+      [-100, -100, -100], 
+      [1, 1, 1, 1]
+  );
+  skybox.arrays = skyboxArrays;
+  skybox.bufferInfo = skyboxBufferInfo;
+  skybox.vao = skyboxVAO;
+  skybox.texture = skyboxTexture;
+  scene.addObject(skybox);
+
   scene.addObject(sandFloor);
 
   // Copy the properties of the cars
@@ -337,6 +361,12 @@ async function drawScene() {
   // Draw the objects
   for (let object of scene.objects) {
     let programInfo = object.texture ? textureProgramInfo : colorProgramInfo;
+    
+    // Use special shader for skybox
+    if (object.id === -999) {
+        programInfo = skyboxProgramInfo;
+    }
+
     gl.useProgram(programInfo.program);
     drawObject(gl, programInfo, object, viewProjectionMatrix, fract);
   }

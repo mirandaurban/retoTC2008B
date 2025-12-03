@@ -431,4 +431,143 @@ function cubeTextured(size) {
     return arrays;
 }
 
-export { shapeF, diamond, cubeFaceColors, cubeVertexColors, cubeTextured, car2D };
+// Create the data for a skybox cube with UVs for a horizontal cross texture
+function skyboxCube(size) {
+    let arrays = {
+        a_position: {
+            numComponents: 3,
+            data: [
+                // Front Face
+                -1.0, -1.0,  1.0,
+                1.0, -1.0,  1.0,
+                1.0,  1.0,  1.0,
+                -1.0,  1.0,  1.0,
+
+                // Back face
+                -1.0, -1.0, -1.0,
+                -1.0,  1.0, -1.0,
+                1.0,  1.0, -1.0,
+                1.0, -1.0, -1.0,
+
+                // Top face
+                -1.0,  1.0, -1.0,
+                -1.0,  1.0,  1.0,
+                1.0,  1.0,  1.0,
+                1.0,  1.0, -1.0,
+
+                // Bottom face
+                -1.0, -1.0, -1.0,
+                1.0, -1.0, -1.0,
+                1.0, -1.0,  1.0,
+                -1.0, -1.0,  1.0,
+
+                // Right face
+                1.0, -1.0, -1.0,
+                1.0,  1.0, -1.0,
+                1.0,  1.0,  1.0,
+                1.0, -1.0,  1.0,
+
+                // Left face
+                -1.0, -1.0, -1.0,
+                -1.0, -1.0,  1.0,
+                -1.0,  1.0,  1.0,
+                -1.0,  1.0, -1.0
+            ].map(e => size * e)
+        },
+        a_normal: {
+            numComponents: 3,
+            data: [
+                // Front Face
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+
+                // Back face
+                0, 0, -1,
+                0, 0, -1,
+                0, 0, -1,
+                0, 0, -1,
+
+                // Top face
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+
+                // Bottom face
+                0, -1, 0,
+                0, -1, 0,
+                0, -1, 0,
+                0, -1, 0,
+
+                // Right face
+                1, 0, 0,
+                1, 0, 0,
+                1, 0, 0,
+                1, 0, 0,
+
+                // Left face
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+            ]
+        },
+        a_texCoord: {
+            numComponents: 2,
+            data: [
+                // Front Face (x: 1/4 - 2/4, y: 1/3 - 2/3)
+                0.25, 0.333,
+                0.50, 0.333,
+                0.50, 0.666,
+                0.25, 0.666,
+
+                // Back face (x: 3/4 - 4/4, y: 1/3 - 2/3)
+                0.75, 0.333,
+                0.75, 0.666,
+                1.00, 0.666,
+                1.00, 0.333,
+
+                // Top face (x: 1/4 - 2/4, y: 2/3 - 3/3)
+                0.25, 1.00,
+                0.25, 0.666,
+                0.50, 0.666,
+                0.50, 1.00,
+
+                // Bottom face (x: 1/4 - 2/4, y: 0 - 1/3)
+                0.25, 0.00,
+                0.50, 0.00,
+                0.50, 0.333,
+                0.25, 0.333,
+
+                // Right face (x: 2/4 - 3/4, y: 1/3 - 2/3)
+                0.50, 0.333,
+                0.50, 0.666,
+                0.75, 0.666,
+                0.75, 0.333,
+
+                // Left face (x: 0 - 1/4, y: 1/3 - 2/3)
+                0.00, 0.333,
+                0.25, 0.333,
+                0.25, 0.666,
+                0.00, 0.666,
+            ]
+        },
+        indices: {
+            numComponents: 3,
+            data: [
+                0, 1, 2,      0, 2, 3,    // Front face
+                4, 5, 6,      4, 6, 7,    // Back face
+                8, 9, 10,     8, 10, 11,  // Top face
+                12, 13, 14,   12, 14, 15, // Bottom face
+                16, 17, 18,   16, 18, 19, // Right face
+                20, 21, 22,   20, 22, 23  // Left face
+            ]
+        }
+    };
+
+    return arrays;
+}
+
+export { shapeF, diamond, cubeFaceColors, cubeVertexColors, cubeTextured, car2D, skyboxCube };
