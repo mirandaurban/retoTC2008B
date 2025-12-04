@@ -34,7 +34,7 @@ class CityModel(Model):
 
         
         # Load the map file
-        with open("city_files/2025_base.txt") as baseFile:
+        with open("city_files/new_map.txt") as baseFile:
             lines = baseFile.readlines()
             lines = [line.strip() for line in lines if line.strip()]
             
