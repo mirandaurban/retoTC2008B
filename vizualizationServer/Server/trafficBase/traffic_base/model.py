@@ -431,5 +431,5 @@ class CityModel(Model):
         """Get average moves from all the cars"""
         cars = model.agents.select(lambda x: isinstance(x, Car))
         if cars:
-            return sum(roomba.moves for roomba in roombas) / len(roombas)
+            return sum(cars.moves for car in cars) / len(cars)
         return 0
