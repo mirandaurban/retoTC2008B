@@ -68,8 +68,8 @@ let elapsed = 0;
 let then = 0;
 
 let lightDirection = [0.5, -1.0, 0.5]; // Dirección de la luz (como sol)
-let lightColor = [1.0, 1.0, 1.0];     // Color de la luz (blanco)
-let lightIntensity = 1.2;              // Intensidad de la luz
+let lightColor = [0, 0, 1.0];     // Color de la luz (blanco)
+let lightIntensity = 3;              // Intensidad de la luz
 
 
 // Main function is async to be able to make the requests
@@ -327,11 +327,11 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
 
 // Función auxiliar para obtener color del semáforo
 function getTrafficLightColor(state) {
-    if (!state) return [1.0, 1.0, 0.8]; // Color neutro por defecto
+    if (!state) return [1.0, 1.0, 1.0]; // Color neutro por defecto
     
     switch(state.toLowerCase()) {
         case 'green': 
-            return [0.0, 1.0, 0.0];    // Verde
+            return [0.0, 0.0, 1.0];    // Verde
         case 'red': 
         default: 
             return [1.0, 0.0, 0.0];    // Rojo
