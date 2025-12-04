@@ -161,7 +161,7 @@ Cada componente cumple un rol específico y se comunican entre sí para producir
 
 ---
 
-# 🧩 Diagrama General de Arquitectura
+# Diagrama General de Arquitectura
 
      ┌──────────────────────────┐
      │     Solara / Mesa Viz    │
