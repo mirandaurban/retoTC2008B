@@ -11,9 +11,9 @@ from mesa.visualization.components import AgentPortrayalStyle
 
 COLORS = {
     "Active_cars": "blue", 
-    "Arrived_per_step": "green", 
+    #"Arrived_per_step": "green", 
     "Total_arrived": "red",
-    "Total_spawned": "purple"
+    #"Total_spawned": "purple"
 }
 #"Average_moves": lambda m: self.aver
 

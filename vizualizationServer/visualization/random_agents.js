@@ -149,10 +149,10 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   coralModel2.prepareVAO(gl, programInfo, coralObj2);
   const coralModel3 = new Object3D(-4, [0, 0, 0], [0, 0, 0], [1.0, 3.0, 1.0]);
   coralModel3.prepareVAO(gl, programInfo, coralObj3);
-  // const coralModel4 = new Object3D(-5, [0,0,0], [0,0,0], [0.5, 1.5, 0.5]);
-  // coralModel4.prepareVAO(gl, programInfo, coralObj4);
+  const coralModel4 = new Object3D(-5, [0,0,0], [0,0,0], [0.5, 1.5, 0.5]);
+  coralModel4.prepareVAO(gl, programInfo, coralObj4);
 
-  const coralModels = [coralModel1, coralModel2, coralModel3];
+  const coralModels = [coralModel1, coralModel2, coralModel3, coralModel4];
 
   const bigFanShellModel = new Object3D(
     -6,

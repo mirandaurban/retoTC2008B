@@ -5,6 +5,30 @@ from .agent import *
 import json
 import random
 import math
+import requests
+
+# Declarar variables globales cin características del agente y dónde se guarda el modelo
+current_cars = 0
+arrived_cars = 0
+attempt_number = 10
+
+url = "http://10.49.12.39:5000/api/"
+#endpoint = "validate_attempt"
+endpoint = "attempt"
+
+data = {
+    "year" : 2025,
+    "classroom" : 301,
+    "name" : "Estrellas",
+    "current_cars": 0,
+    "total_arrived": 0,
+    "attempt_number": attempt_number
+}
+
+headers = {
+    "Content-Type": "application/json"
+}
+
 
 class CityModel(Model):
     """
@@ -54,10 +78,10 @@ class CityModel(Model):
             self.datacollector = mesa.DataCollector(
                 {
                     "Active_cars": lambda m: self.count_active_cars(m),
-                    "Arrived_per_step": lambda m: self.count_arrived_this_step(m),
+                    #"Arrived_per_step": lambda m: self.count_arrived_this_step(m),
                     "Total_arrived": lambda m: m.total_arrived,
-                    "Total_spawned": lambda m: m.cars_spawned,
-                    "Average_moves": lambda m: self.average_moves(m),
+                    #"Total_spawned": lambda m: m.cars_spawned,
+                    #"Average_moves": lambda m: self.average_moves(m),
                 }
             )
             
@@ -425,6 +449,32 @@ class CityModel(Model):
         self.datacollector.collect(self)
         
         self.steps_count += 1
+
+        model_data = self.datacollector.get_model_vars_dataframe()
+    
+        # Mandar datos cada 5 steps
+        if ((self.steps_count - 1) % 5 == 0):
+            # Obtener el último valor de cada métrica
+            if len(model_data) > 0:
+                current_cars = model_data["Active_cars"].iloc[-1]
+                total_arrived = model_data["Total_arrived"].iloc[-1]
+            else:
+                current_cars = 0
+                total_arrived = 0
+                
+            data = {
+                "year": 2025,
+                "classroom": 301,
+                "name": "Estrellas",
+                "current_cars": int(current_cars),
+                "total_arrived": int(total_arrived),
+                "attempt_number": attempt_number
+            }
+            response = requests.post(url+endpoint, data=json.dumps(data), headers=headers)
+
+            print(f"Data: {data}")
+            print("Request " + "successful" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+            print("Response:", response.json())
         
         # Spawn de carros deste step 1 y cada 10 steps
         if ((self.steps_count - 1) % self.spawn_time == 0) and self.cars_spawned < self.num_agents:
