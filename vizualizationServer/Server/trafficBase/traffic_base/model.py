@@ -1,3 +1,4 @@
+import mesa
 from mesa import Model
 from mesa.discrete_space import OrthogonalMooreGrid
 from .agent import *
@@ -16,17 +17,18 @@ class CityModel(Model):
         # Load the map dictionary
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
         
+        ## Variables
         # self.num_agents = N
         self.traffic_lights = []
-        self.cars_spawned = 0
-        self.steps_count = 0
+        self.cars_spawned = 0 # Cantidad de carros spawneados
+        self.steps_count = 0 # Cantidad de steps de la simulación
+        self.total_arrived = 0 # Total acumulado
         
         if hasattr(N, 'value'):
             self.num_agents = N.value
         else:
             self.num_agents = N
         
-        # Lo mismo para spawn_time
         if hasattr(spawn_time, 'value'):
             self.spawn_time = int(spawn_time.value)
         else:
@@ -47,6 +49,17 @@ class CityModel(Model):
             
             # Store map characters for graph creation
             self.map_grid = {}
+
+            # Se usa un diccionario para guardar los estados de la simulación (métricas de desempeño)
+            self.datacollector = mesa.DataCollector(
+                {
+                    "Active_cars": lambda m: self.count_active_cars(m),
+                    "Arrived_per_step": lambda m: self.count_arrived_this_step(m),
+                    "Total_arrived": lambda m: m.total_arrived,
+                    "Total_spawned": lambda m: m.cars_spawned,
+                    "Average_moves": lambda m: self.average_moves(m),
+                }
+            )
             
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
@@ -261,49 +274,40 @@ class CityModel(Model):
     def spawn_car(self):
         """Crear un carro en una esquina aleatoria"""
         if self.cars_spawned >= self.num_agents:
-            return 
+            return         
+        max_cars_to_spawn = min(4, self.num_agents - self.cars_spawned)
+        cars_spawned_this_step = 0
         
-        max_attempts = 10
-        attempts = 0
-        
-        while attempts < max_attempts:
-            attempts += 1
-            
-            valid_spawns = []
-            for corner in self.spawn_corners:
-                if corner in self.graph and self.graph[corner]:
-                    if not any(isinstance(agent, Car) for agent in self.grid[corner].agents):
-                        valid_spawns.append(corner)
-            
-            if not valid_spawns:
+        for corner in self.spawn_corners:
+            if cars_spawned_this_step >= max_cars_to_spawn:
                 break
-                # road_cells = [pos for pos, sym in self.map_grid.items() 
-                #             if sym not in ["#", "D"] and pos in self.graph and self.graph[pos]]
-                # road_cells = [pos for pos in road_cells 
-                #             if not any(isinstance(agent, Car) for agent in self.grid[pos].agents)]
-                # if road_cells:
-                #     emergency_spawn = self.random.choice(road_cells)
-                #     valid_spawns = [emergency_spawn]
-                # else:
-                #     continue
-            
-            spawn_pos = self.random.choice(valid_spawns)
-            destination_pos = self.get_random_destination()
-            if not destination_pos:
+                
+            if self.cars_spawned >= self.num_agents:
+                break
+
+            if corner not in self.graph or not self.graph[corner]:
                 continue
-                
-            path_to_follow = self.find_path(spawn_pos, destination_pos)
             
-            if path_to_follow:
-                cell_inicial = self.grid[spawn_pos]
-                destination_cell = self.grid[destination_pos]
+            if any(isinstance(agent, Car) for agent in self.grid[corner].agents):
+                continue
+            
+            destination_found = False
+            
+            for attempt in range(3):
+                destination_pos = self.get_random_destination()
+                if not destination_pos:
+                    continue
                 
-                agent = Car(self, cell=cell_inicial, destination=destination_cell, path=path_to_follow)
-                self.cars_spawned += 1
-                # print(f"✓ Carro {self.cars_spawned} en {spawn_pos} -> {destination_pos} ({len(path_to_follow)} pasos)")
-                return
-        
-        # print(f"No se pudo spawnear carro")
+                path_to_follow = self.find_path(corner, destination_pos)
+                
+                if path_to_follow:
+                    cell_inicial = self.grid[corner]
+                    destination_cell = self.grid[destination_pos]
+                    
+                    agent = Car(self, cell=cell_inicial, destination=destination_cell, path=path_to_follow)
+                    self.cars_spawned += 1
+                    cars_spawned_this_step += 1
+                    break
 
     def heuristic_function(self, pos1, pos2):
         """Euclidean distance heuristic for grid"""
@@ -417,20 +421,39 @@ class CityModel(Model):
         return self.random.choice(destinations) if destinations else None
             
     def step(self):
-        """Advance the model by one step."""
+        """ Adevance the model by one step"""
+        self.datacollector.collect(self)
+        
         self.steps_count += 1
-
-        active_cars = sum(1 for agent in self.agents if isinstance(agent, Car) and agent.state != "In destination")
-      
-        if self.steps_count % self.spawn_time == 0 and self.cars_spawned < self.num_agents:
+        
+        # Spawn de carros deste step 1 y cada 10 steps
+        if ((self.steps_count - 1) % self.spawn_time == 0) and self.cars_spawned < self.num_agents:
             self.spawn_car()
         
+        # Ejecutar steps de todos los agentes
         self.agents.shuffle_do("step")
+        
+    @staticmethod
+    def count_active_cars(model):
+        """Count active cars (not at destination)"""
+        cars = model.agents.select(lambda x: isinstance(x, Car) and 
+                                           (not hasattr(x, 'state') or x.state != "In destination"))
+        return len(cars)
+
+    @staticmethod
+    def count_arrived_this_step(model):
+        """Count cars that arrived in current step"""
+        if not hasattr(model, '_arrived_this_step'):
+            model._arrived_this_step = 0
+        
+        arrived = model._arrived_this_step
+        model._arrived_this_step = 0  # Resetear para el próximo step
+        return arrived
 
     @staticmethod
     def average_moves(model):
         """Get average moves from all the cars"""
         cars = model.agents.select(lambda x: isinstance(x, Car))
         if cars:
-            return sum(cars.moves for car in cars) / len(cars)
+            return sum(car.moves for car in cars) / len(cars)
         return 0

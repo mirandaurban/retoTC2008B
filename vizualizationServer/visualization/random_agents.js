@@ -68,8 +68,8 @@ let elapsed = 0;
 let then = 0;
 
 let lightDirection = [0.5, -1.0, 0.5]; // Dirección de la luz (como sol)
-let lightColor = [0, 0, 1.0];     // Color de la luz (blanco)
-let lightIntensity = 3;              // Intensidad de la luz
+let lightColor = [1.0, 1.0, 1.0];     // Color de la luz (blanco)
+let lightIntensity = 1;              // Intensidad de la luz
 
 
 // Main function is async to be able to make the requests
@@ -164,9 +164,9 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
 
   const sandFloor = new Object3D(
       -1000,  // ID único para el piso
-      [12, 0.9, 12],  // Posición: debajo de todo
+      [17, 0.9, 17],  // Posición: debajo de todo
       [0, 0, 0],   // Sin rotación
-      [28, 0.1, 28],  // Escala
+      [35, 0.1, 35],  // Escala
       [1, 1, 1, 1]  // Color blanco
   );
   
@@ -244,7 +244,7 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
     tl.bufferInfo = bigFanShellModel.bufferInfo;
     tl.vao = bigFanShellModel.vao;
     tl.scale = { ...bigFanShellModel.scale };
-    tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
+    tl.color = [1, 1, 1, 1.0]; // BLANCO
     scene.addObject(tl);
   }
 
@@ -331,7 +331,7 @@ function getTrafficLightColor(state) {
     
     switch(state.toLowerCase()) {
         case 'green': 
-            return [0.0, 0.0, 1.0];    // Verde
+            return [0.0, 1.0, 0.0];    // Verde
         case 'red': 
         default: 
             return [1.0, 0.0, 0.0];    // Rojo

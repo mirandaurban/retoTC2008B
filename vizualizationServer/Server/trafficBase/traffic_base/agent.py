@@ -31,6 +31,7 @@ class Car(CellAgent):
         self.path = path  # Guardar la ruta
         self.path_index = 0  # Índice actual en la ruta
         self.moves = 0 # Contador de movimientos
+        self.has_arrived = False # Contador de agentes en destino
 
     def follow_path(self):
         """
@@ -90,7 +91,7 @@ class Car(CellAgent):
         """
         Recalculating the route using A*
         """
-        print(f"old path: {self.path}")
+        #print(f"old path: {self.path}")
 
         if self.destination is None:
             print("No hay destino, no se puede recalcular ruta")
@@ -101,7 +102,7 @@ class Car(CellAgent):
         destination_coords = self.destination.coordinate
                 
         new_path = self.model.find_path(current_coords, destination_coords)
-        print(f"New path: {new_path}")
+        #print(f"New path: {new_path}")
         
         if new_path:
             self.path = new_path
@@ -150,8 +151,14 @@ class Car(CellAgent):
         # Comparar coordenadas
         if self.cell.coordinate == self.destination.coordinate:
             # print(f"Carro llegó a destino en {self.cell.coordinate}, eliminando...")
-            self.remove() 
+            self.has_arrived = True
             self.state = "In destination"
+            if hasattr(self.model, '_arrived_this_step'):
+                self.model._arrived_this_step += 1
+            self.model.total_arrived += 1
+            
+            # Remover el agente
+            self.remove()
             return True
         
         return False
