@@ -179,7 +179,7 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
 
   const sandFloor = new Object3D(
     -1000, // ID único para el piso
-    [17.5, 0.93, 17], // Posición: centrada (36/2 - 0.5, 0.93, 35/2 - 0.5) 
+    [17.5, 0.93, 17], // Posición: centrada (36/2 - 0.5, 0.93, 35/2 - 0.5)
     [0, 0, 0], // Sin rotación
     [40, 0.1, 40], // Escala: un poco más grande que el mapa
     [1, 1, 1, 1] // Color blanco
@@ -408,10 +408,10 @@ async function drawScene() {
 
 function syncSceneObjects() {
   // Get IDs of cars currently in the server response
-  const activeCarIds = new Set(cars.map(car => car.id));
-  
+  const activeCarIds = new Set(cars.map((car) => car.id));
+
   // Remove cars from scene that are no longer in the server response
-  scene.objects = scene.objects.filter(obj => {
+  scene.objects = scene.objects.filter((obj) => {
     // If this object is marked as a car, only keep it if it's still active
     if (obj.isCar) {
       return activeCarIds.has(obj.id);

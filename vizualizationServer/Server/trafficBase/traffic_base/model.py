@@ -276,15 +276,16 @@ class CityModel(Model):
                         valid_spawns.append(corner)
             
             if not valid_spawns:
-                road_cells = [pos for pos, sym in self.map_grid.items() 
-                            if sym not in ["#", "D"] and pos in self.graph and self.graph[pos]]
-                road_cells = [pos for pos in road_cells 
-                            if not any(isinstance(agent, Car) for agent in self.grid[pos].agents)]
-                if road_cells:
-                    emergency_spawn = self.random.choice(road_cells)
-                    valid_spawns = [emergency_spawn]
-                else:
-                    continue
+                break
+                # road_cells = [pos for pos, sym in self.map_grid.items() 
+                #             if sym not in ["#", "D"] and pos in self.graph and self.graph[pos]]
+                # road_cells = [pos for pos in road_cells 
+                #             if not any(isinstance(agent, Car) for agent in self.grid[pos].agents)]
+                # if road_cells:
+                #     emergency_spawn = self.random.choice(road_cells)
+                #     valid_spawns = [emergency_spawn]
+                # else:
+                #     continue
             
             spawn_pos = self.random.choice(valid_spawns)
             destination_pos = self.get_random_destination()
@@ -302,7 +303,7 @@ class CityModel(Model):
                 # print(f"✓ Carro {self.cars_spawned} en {spawn_pos} -> {destination_pos} ({len(path_to_follow)} pasos)")
                 return
         
-        print(f"No se pudo spawnear carro")
+        # print(f"No se pudo spawnear carro")
 
     def heuristic_function(self, pos1, pos2):
         """Euclidean distance heuristic for grid"""

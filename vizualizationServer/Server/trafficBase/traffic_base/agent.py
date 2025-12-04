@@ -90,6 +90,8 @@ class Car(CellAgent):
         """
         Recalculating the route using A*
         """
+        print(f"old path: {self.path}")
+
         if self.destination is None:
             print("No hay destino, no se puede recalcular ruta")
             self.state = "Exploring"
@@ -99,6 +101,7 @@ class Car(CellAgent):
         destination_coords = self.destination.coordinate
                 
         new_path = self.model.find_path(current_coords, destination_coords)
+        print(f"New path: {new_path}")
         
         if new_path:
             self.path = new_path
