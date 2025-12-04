@@ -11,7 +11,7 @@ class CityModel(Model):
     Creates a model based on a city map with directional roads.
     """
     
-    def __init__(self, N=3000, spawn_time=10, seed=42):
+    def __init__(self, N=10000, spawn_time=10, seed=42):
         super().__init__(seed=seed)
         
         # Load the map dictionary
