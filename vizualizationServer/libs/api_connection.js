@@ -102,6 +102,16 @@ async function getCars() {
                 //console.log("Agents:", agents);
 
             } else { // Para iteraciones futuras, actualizar la posición
+                // Get IDs from server response
+                const serverCarIds = new Set(result.positions.map(c => c.id));
+                
+                // Remove cars that are no longer in the server response
+                for (let i = cars.length - 1; i >= 0; i--) {
+                    if (!serverCarIds.has(cars[i].id)) {
+                        cars.splice(i, 1);
+                    }
+                }
+                
                 // Update the positions of existing agents
                 // Sincronización entre el objeto de Mesa y el de WebGL
                 for (const car of result.positions) {

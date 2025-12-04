@@ -37,23 +37,21 @@ import vsTexture from "../assets/shaders/vs_color_texture.glsl?raw";
 import fsTexture from "../assets/shaders/fs_color_texture.glsl?raw";
 import vsSkybox from "../assets/shaders/vs_skybox.glsl?raw";
 import fsSkybox from "../assets/shaders/fs_skybox.glsl?raw";
-import { cubeTextured, skyboxCube } from '../libs/shapes';
+import { cubeTextured, skyboxCube } from "../libs/shapes";
 import starfishTextureUrl from "../textures/starfish.png";
 import sandRoadTextureUrl from "../textures/sand.png";
 import skyboxTextureUrl from "../textures/skyrender.png";
 
 const scene = new Scene3D();
 
-
 // Variable for slider settings
 const settings = {
-    // Simulation parameters
-    simulationParameters: {
-      spawn_time: 10,
-      cars: 3000,
-    }
+  // Simulation parameters
+  simulationParameters: {
+    spawn_time: 10,
+    cars: 3000,
+  },
 };
-
 
 // Global variables
 let colorProgramInfo = undefined;
@@ -63,14 +61,13 @@ let starfishTexture = undefined;
 let sandRoadTexture = undefined;
 let carModel = undefined;
 let gl = undefined;
-const duration = 500; // ms // Speed de la simulación
+const duration = 100; // ms // Speed de la simulación
 let elapsed = 0;
 let then = 0;
 
 let lightDirection = [0.5, -1.0, 0.5]; // Dirección de la luz (como sol)
-let lightColor = [0, 0, 1.0];     // Color de la luz (blanco)
-let lightIntensity = 3;              // Intensidad de la luz
-
+let lightColor = [0.07, 0.33, 0.452]; // Azul pastel suave y luminoso
+let lightIntensity = 2.5; // Intensidad suave y realista
 
 // Main function is async to be able to make the requests
 async function main() {
@@ -85,8 +82,14 @@ async function main() {
   textureProgramInfo = twgl.createProgramInfo(gl, [vsTexture, fsTexture]);
   skyboxProgramInfo = twgl.createProgramInfo(gl, [vsSkybox, fsSkybox]);
 
-  starfishTexture = twgl.createTexture(gl, { src: starfishTextureUrl, flipY: 1 });
-  sandRoadTexture = twgl.createTexture(gl, { src: sandRoadTextureUrl, flipY: 1 });
+  starfishTexture = twgl.createTexture(gl, {
+    src: starfishTextureUrl,
+    flipY: 1,
+  });
+  sandRoadTexture = twgl.createTexture(gl, {
+    src: sandRoadTextureUrl,
+    flipY: 1,
+  });
 
   // Prepare the user interface
   setupUI();
@@ -136,59 +139,78 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
   baseCube.prepareVAO(gl, programInfo);
 
   // Store the car model for later use
-  const pezModel = new Object3D(-8, [0,0,0], [0,0,0], [0.5, 0.5, 0.5]);
+  const pezModel = new Object3D(-8, [0, 0, 0], [0, 0, 0], [0.5, 0.5, 0.5]);
   pezModel.prepareVAO(gl, programInfo, pezObj);
   carModel = pezModel;
 
-  const coralModel1 = new Object3D(-2, [0,0,0], [0,0,0], [1.0, 3.0, 1.0]);
+  const coralModel1 = new Object3D(-2, [0, 0, 0], [0, 0, 0], [1.0, 3.0, 1.0]);
   coralModel1.prepareVAO(gl, programInfo, coralObj1);
-  const coralModel2 = new Object3D(-3, [0,0,0], [0,0,0], [1.0, 5.0, 1.0]);
+  const coralModel2 = new Object3D(-3, [0, 0, 0], [0, 0, 0], [1.0, 5.0, 1.0]);
   coralModel2.prepareVAO(gl, programInfo, coralObj2);
-  const coralModel3 = new Object3D(-4, [0,0,0], [0,0,0], [1.0, 3.0, 1.0]);
+  const coralModel3 = new Object3D(-4, [0, 0, 0], [0, 0, 0], [1.0, 3.0, 1.0]);
   coralModel3.prepareVAO(gl, programInfo, coralObj3);
   // const coralModel4 = new Object3D(-5, [0,0,0], [0,0,0], [0.5, 1.5, 0.5]);
   // coralModel4.prepareVAO(gl, programInfo, coralObj4);
 
-  const coralModels = [coralModel1, coralModel2, coralModel3,];
+  const coralModels = [coralModel1, coralModel2, coralModel3];
 
-  const bigFanShellModel = new Object3D(-6, [0,0,0], [0,0,0], [3.0, 4.0, 3.0]);
+  const bigFanShellModel = new Object3D(
+    -6,
+    [0, 0, 0],
+    [0, 0, 0],
+    [3.0, 4.0, 3.0]
+  );
   bigFanShellModel.prepareVAO(gl, programInfo, bigFanShellObj);
 
-  const starfishModel = new Object3D(-7, [0,0,0], [0,0,0], [0.2, 0.2, 0.2]);
+  const starfishModel = new Object3D(-7, [0, 0, 0], [0, 0, 0], [0.2, 0.2, 0.2]);
   starfishModel.prepareVAO(gl, textureProgramInfo, starfishObj);
   starfishModel.texture = starfishTexture;
 
   const textureCubeArrays = cubeTextured(0.5);
-  const textureCubeBufferInfo = twgl.createBufferInfoFromArrays(gl, textureCubeArrays);
-  const textureCubeVAO = twgl.createVAOFromBufferInfo(gl, textureProgramInfo, textureCubeBufferInfo)
+  const textureCubeBufferInfo = twgl.createBufferInfoFromArrays(
+    gl,
+    textureCubeArrays
+  );
+  const textureCubeVAO = twgl.createVAOFromBufferInfo(
+    gl,
+    textureProgramInfo,
+    textureCubeBufferInfo
+  );
 
   const sandFloor = new Object3D(
-      -1000,  // ID único para el piso
-      [12, 0.9, 12],  // Posición: debajo de todo
-      [0, 0, 0],   // Sin rotación
-      [28, 0.1, 28],  // Escala
-      [1, 1, 1, 1]  // Color blanco
+    -1000, // ID único para el piso
+    [17.5, 0.93, 17], // Posición: centrada (36/2 - 0.5, 0.93, 35/2 - 0.5)
+    [0, 0, 0], // Sin rotación
+    [40, 0.1, 40], // Escala: un poco más grande que el mapa
+    [1, 1, 1, 1] // Color blanco
   );
-  
+
   // Asigna los buffers de textura
   sandFloor.arrays = textureCubeArrays;
   sandFloor.bufferInfo = textureCubeBufferInfo;
   sandFloor.vao = textureCubeVAO;
   sandFloor.texture = sandRoadTexture;
   sandFloor.texScale = 10;
-  
-  const skyboxTexture = twgl.createTexture(gl, { src: skyboxTextureUrl, flipY: 1 });
-  
+
+  const skyboxTexture = twgl.createTexture(gl, {
+    src: skyboxTextureUrl,
+    flipY: 1,
+  });
+
   const skyboxArrays = skyboxCube(0.5);
   const skyboxBufferInfo = twgl.createBufferInfoFromArrays(gl, skyboxArrays);
-  const skyboxVAO = twgl.createVAOFromBufferInfo(gl, skyboxProgramInfo, skyboxBufferInfo);
+  const skyboxVAO = twgl.createVAOFromBufferInfo(
+    gl,
+    skyboxProgramInfo,
+    skyboxBufferInfo
+  );
 
   const skybox = new Object3D(
-      -999, 
-      [0, 0, 0], 
-      [0, 0, 0], 
-      [-100, -100, -100], 
-      [1, 1, 1, 1]
+    -999,
+    [0, 0, 0],
+    [0, 0, 0],
+    [-100, -100, -100],
+    [1, 1, 1, 1]
   );
   skybox.arrays = skyboxArrays;
   skybox.bufferInfo = skyboxBufferInfo;
@@ -210,41 +232,42 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
 
   // Copy the properties of the obstacles
   for (const obstacle of obstacles) {
-    const randomCoral = coralModels[Math.floor(Math.random() * coralModels.length)];
+    const randomCoral =
+      coralModels[Math.floor(Math.random() * coralModels.length)];
     obstacle.arrays = randomCoral.arrays;
     obstacle.bufferInfo = randomCoral.bufferInfo;
     obstacle.vao = randomCoral.vao;
     obstacle.scale = { ...randomCoral.scale };
     // Random color
     obstacle.color = [Math.random(), Math.random(), Math.random(), 1.0];
-    
+
     // Random rotation
     obstacle.rotDeg.y = Math.random() * 360;
-    obstacle.rotRad.y = obstacle.rotDeg.y * Math.PI / 180;
+    obstacle.rotRad.y = (obstacle.rotDeg.y * Math.PI) / 180;
 
     scene.addObject(obstacle);
   }
 
   // Copy the properties of the road cells
   for (const road of roads) {
-      road.arrays = textureCubeArrays;
-      road.bufferInfo = textureCubeBufferInfo;
-      road.vao = textureCubeVAO;
-      road.texture = sandRoadTexture;        
-      road.scale = { x: 2.0, y: 0.05, z: 2.0 };
-      road.color = [1, 1, 1, 1];
-      scene.addObject(road);
-    }
+    road.arrays = textureCubeArrays;
+    road.bufferInfo = textureCubeBufferInfo;
+    road.vao = textureCubeVAO;
+    road.texture = sandRoadTexture;
+    road.scale = { x: 2.0, y: 0.05, z: 2.0 };
+    road.color = [1, 1, 1, 1];
+    scene.addObject(road);
+  }
 
   // Copy the properties of the traffic lights
   for (const tl of traffic_lights) {
     tl.arrays = bigFanShellModel.arrays;
     tl.isTrafficLight = true;
-    tl.state = 'red';
+    tl.state = "red";
     tl.bufferInfo = bigFanShellModel.bufferInfo;
     tl.vao = bigFanShellModel.vao;
     tl.scale = { ...bigFanShellModel.scale };
-    tl.color = [1, 0.8, 0, 1.0]; // AMARILLO
+    tl.color = [0.9, 0.9, 0.95, 1.0]; // Blanco/gris claro para mejor iluminación
     scene.addObject(tl);
   }
 
@@ -258,7 +281,7 @@ function setupObjects(scene, gl, programInfo, textureProgramInfo) {
     des.color = [0, 1, 0, 1.0]; // VERDE (ignored if textured)
 
     des.rotDeg.x = -90;
-    des.rotRad.x = des.rotDeg.x * Math.PI / 180;
+    des.rotRad.x = (des.rotDeg.x * Math.PI) / 180;
 
     scene.addObject(des);
   }
@@ -296,11 +319,11 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   // Uniforms del modelo
   let objectUniforms = {
     u_transforms: wvpMat,
-    u_world: transforms,  
+    u_world: transforms,
     u_lightDirection: lightDirection,
     u_color: object.color,
   };
-  
+
   // Agregar luz específica para semáforos
   if (object.isTrafficLight) {
     // Usar el estado real del semáforo
@@ -314,11 +337,11 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     objectUniforms.u_lightIntensity = lightIntensity;
     objectUniforms.u_objectColor = [0, 0, 0, 0]; // Sin color específico
   }
-  
+
   if (object.texture) {
     objectUniforms.u_texture = object.texture;
   }
-  
+
   twgl.setUniforms(programInfo, objectUniforms);
 
   gl.bindVertexArray(object.vao);
@@ -327,15 +350,15 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
 
 // Función auxiliar para obtener color del semáforo
 function getTrafficLightColor(state) {
-    if (!state) return [1.0, 1.0, 1.0]; // Color neutro por defecto
-    
-    switch(state.toLowerCase()) {
-        case 'green': 
-            return [0.0, 0.0, 1.0];    // Verde
-        case 'red': 
-        default: 
-            return [1.0, 0.0, 0.0];    // Rojo
-    }
+  if (!state) return [1.0, 1.0, 0.8]; // Color neutro por defecto
+
+  switch (state.toLowerCase()) {
+    case "green":
+      return [0.0, 0.5, 1.0]; // Azul
+    case "red":
+    default:
+      return [1.0, 0.4, 0.8]; // Rosa
+  }
 }
 
 // Function to do the actual display of the objects
@@ -362,10 +385,10 @@ async function drawScene() {
   // Draw the objects
   for (let object of scene.objects) {
     let programInfo = object.texture ? textureProgramInfo : colorProgramInfo;
-    
+
     // Use special shader for skybox
     if (object.id === -999) {
-        programInfo = skyboxProgramInfo;
+      programInfo = skyboxProgramInfo;
     }
 
     gl.useProgram(programInfo.program);
@@ -375,7 +398,7 @@ async function drawScene() {
   // Update the scene after the elapsed duration
   if (elapsed >= duration) {
     elapsed = 0;
-    await getTrafficLights()
+    await getTrafficLights();
     await update();
     syncSceneObjects();
   }
@@ -384,37 +407,49 @@ async function drawScene() {
 }
 
 function syncSceneObjects() {
-  // Add new cars to the scene
+  // Get IDs of cars currently in the server response
+  const activeCarIds = new Set(cars.map((car) => car.id));
+
+  // Remove cars from scene that are no longer in the server response
+  scene.objects = scene.objects.filter((obj) => {
+    // If this object is marked as a car, only keep it if it's still active
+    if (obj.isCar) {
+      return activeCarIds.has(obj.id);
+    }
+    // Keep all non-car objects
+    return true;
+  });
+
+  // Add new cars to the scene or update existing ones
   for (const car of cars) {
-    const sceneCar = scene.objects.find(obj => obj.id == car.id);
-    
+    const sceneCar = scene.objects.find((obj) => obj.id == car.id);
+
     if (sceneCar) {
       // Si ya existe, verificar si se movió
       if (sceneCar.oldPos) {
         // Calcular cambio de posición
         const dx = car.position.x - sceneCar.oldPos.x;
         const dz = car.position.z - sceneCar.oldPos.z;
-        
+
         // Rotar si se movió
         if (dx !== 0 || dz !== 0) {
-          const angle = Math.atan2(-dx, -dz);  // Calcular ángulo hacia donde se mueve
+          const angle = Math.atan2(-dx, -dz); // Calcular ángulo hacia donde se mueve
           sceneCar.rotDeg.y = angle * (180 / Math.PI);
-          sceneCar.rotRad.y = angle;           
+          sceneCar.rotRad.y = angle;
         }
       }
-      
+
       // Guardar posición actual como vieja para la próxima vez
       sceneCar.oldPos = {
         x: car.position.x,
-        y: car.position.y, 
-        z: car.position.z
+        y: car.position.y,
+        z: car.position.z,
       };
-      
+
       // Actualizar posición en la escena
       sceneCar.position.x = car.position.x;
       sceneCar.position.y = car.position.y;
       sceneCar.position.z = car.position.z;
-      
     } else if (car.vao == undefined && carModel != undefined) {
       // Nuevo pez
       car.arrays = carModel.arrays;
@@ -422,14 +457,15 @@ function syncSceneObjects() {
       car.vao = carModel.vao;
       car.scale = { ...carModel.scale };
       car.color = [Math.random(), Math.random(), Math.random(), 1.0];
-      
+      car.isCar = true; // Mark as a car object for later removal
+
       // Guardar posición inicial
       car.oldPos = {
         x: car.position.x,
         y: car.position.y,
-        z: car.position.z
+        z: car.position.z,
       };
-      
+
       scene.addObject(car);
     }
   }
@@ -456,38 +492,41 @@ function setupViewProjection(gl) {
 
 // Setup a ui.
 function setupUI() {
-  
   const gui = new GUI();
 
   // Settings for the animation
-  const simulationFolder = gui.addFolder('Simulation:');
-  simulationFolder.add( settings.simulationParameters, 'spawn_time', 1, 20)
-      .decimals(0)
-      .name('Spawn time')
-      .onChange(async (value) => {
-          // Actualizar la variable global en api_connection.js
-          if (window.apiSettings) {
-              window.apiSettings.spawn_time = value;
-          }
-          // Reinicializar el modelo con el nuevo número de agentes
-          await reinitializeModel();
-      });
-  simulationFolder.add( settings.simulationParameters, 'cars', 0, 300)
-      .decimals(0)
-      .name('Number of agents')
-      .onChange(async (value) => {
-          // Actualizar la variable global en api_connection.js
-          if (window.apiSettings) {
-              window.apiSettings.number_agents = value;
-          }
-          // Reinicializar el modelo con el nuevo número de agentes
-          await reinitializeModel();
-      });
+  const simulationFolder = gui.addFolder("Simulation:");
+  simulationFolder
+    .add(settings.simulationParameters, "spawn_time", 1, 20)
+    .decimals(0)
+    .name("Spawn time")
+    .onChange(async (value) => {
+      // Actualizar la variable global en api_connection.js
+      if (window.apiSettings) {
+        window.apiSettings.spawn_time = value;
+      }
+      // Reinicializar el modelo con el nuevo número de agentes
+      await reinitializeModel();
+    });
+  simulationFolder
+    .add(settings.simulationParameters, "cars", 0, 300)
+    .decimals(0)
+    .name("Number of agents")
+    .onChange(async (value) => {
+      // Actualizar la variable global en api_connection.js
+      if (window.apiSettings) {
+        window.apiSettings.number_agents = value;
+      }
+      // Reinicializar el modelo con el nuevo número de agentes
+      await reinitializeModel();
+    });
 }
 
 async function reinitializeModel() {
-  console.log(`Reinitializing model with ${settings.simulationParameters.cars} agents`);
-  
+  console.log(
+    `Reinitializing model with ${settings.simulationParameters.cars} agents`
+  );
+
   try {
     // Limpiar TODOS los arrays globales importados
     cars.length = 0;
@@ -495,24 +534,26 @@ async function reinitializeModel() {
     traffic_lights.length = 0;
     roads.length = 0;
     destinations.length = 0;
-    
+
     // Limpiar la escena actual
     scene.objects = [];
-    
+
     // Reinicializar el modelo
     await initAgentsModel();
-    
+
     // Obtener los nuevos datos
     await getObstacles();
     await getCars();
     await getRoad();
     await getTrafficLights();
     await getDestinations();
-    
+
     // Reconfigurar objetos
     setupObjects(scene, gl, colorProgramInfo, textureProgramInfo);
-    
-    console.log(`Model reinitialized. Cars: ${cars.length}, Obstacles: ${obstacles.length}`);
+
+    console.log(
+      `Model reinitialized. Cars: ${cars.length}, Obstacles: ${obstacles.length}`
+    );
   } catch (error) {
     console.error("Error reinitializing model:", error);
   }

@@ -529,17 +529,17 @@ function skyboxCube(size) {
                 1.00, 0.666,
                 1.00, 0.333,
 
-                // Top face (x: 1/4 - 2/4, y: 2/3 - 3/3) - rotated 90 degrees clockwise
-                0.25, 0.666,
-                0.50, 0.666,
-                0.50, 1.00,
+                // Top face (x: 1/4 - 2/4, y: 2/3 - 3/3) - rotated 90° clockwise
                 0.25, 1.00,
+                0.50, 1.00,
+                0.50, 0.666,
+                0.25, 0.666,
 
-                // Bottom face (x: 1/4 - 2/4, y: 0 - 1/3) - rotated 90 degrees clockwise
-                0.25, 0.333,
-                0.50, 0.333,
-                0.50, 0.00,
+                // Bottom face (x: 1/4 - 2/4, y: 0 - 1/3) - rotated 90° clockwise
                 0.25, 0.00,
+                0.50, 0.00,
+                0.50, 0.333,
+                0.25, 0.333,
 
                 // Right face (x: 2/4 - 3/4, y: 1/3 - 2/3)
                 0.50, 0.333,
