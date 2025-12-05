@@ -10,7 +10,7 @@ import requests
 # Declarar variables globales cin características del agente y dónde se guarda el modelo
 current_cars = 0
 arrived_cars = 0
-attempt_number = 10
+attempt_number = 0
 
 url = "http://10.49.12.39:5000/api/"
 #endpoint = "validate_attempt"
@@ -35,7 +35,7 @@ class CityModel(Model):
     Creates a model based on a city map with directional roads.
     """
     
-    def __init__(self, N=10000, spawn_time=10, seed=42):
+    def __init__(self, N=10000, spawn_time=5, seed=42):
         super().__init__(seed=seed)
         
         # Load the map dictionary

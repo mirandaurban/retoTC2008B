@@ -49,7 +49,7 @@ const settings = {
   // Simulation parameters
   simulationParameters: {
     spawn_time: 10,
-    cars: 3000,
+    cars: 100000,
   },
 };
 

@@ -29,8 +29,8 @@ const initData = {
 
 // En api_connection.js
 const apiSettings = {
-    number_agents: 300,
-    spawn_time: 10
+    number_agents: 5000,
+    spawn_time: 2
 };
 
 // Hacerlo disponible globalmente
